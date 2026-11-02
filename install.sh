@@ -12,7 +12,7 @@ INSTALL_DIR="${KARAOKE_DIR:-$HOME/.karaoke}"
 
 plan() {
   echo "Plan de instalare Karaoke:"
-  echo "  1. Descarc aplicația în ${INSTALL_DIR} (dacă lipsește)"
+  echo "  1. Descarc cea mai recentă versiune în ${INSTALL_DIR} (păstrez .env)"
   echo "  2. Verific / instalez Docker (dacă lipsește)"
   echo "  3. Generez .env cu un SECRET_KEY aleator (dacă lipsește)"
   echo "  4. Rulez: docker compose up -d --build"
@@ -24,12 +24,11 @@ if [ "$DRY_RUN" = true ]; then
   exit 0
 fi
 
-# 1. Download the app (idempotent; works from any CWD)
-if [ ! -f "${INSTALL_DIR}/docker-compose.yml" ]; then
-  echo "Descarc aplicația în ${INSTALL_DIR}…"
-  mkdir -p "${INSTALL_DIR}"
-  curl -fsSL "${REPO_TARBALL}" | tar -xz -C "${INSTALL_DIR}" --strip-components=1
-fi
+# 1. Download the latest app (works from any CWD; overwrites source but
+#    preserves a previously generated .env, which is not in the tarball)
+echo "Descarc aplicația în ${INSTALL_DIR}…"
+mkdir -p "${INSTALL_DIR}"
+curl -fsSL "${REPO_TARBALL}" | tar -xz -C "${INSTALL_DIR}" --strip-components=1
 cd "${INSTALL_DIR}"
 
 # 2. Docker
