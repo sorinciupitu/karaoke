@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: ./backend
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-change-me}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      DATABASE_URL: sqlite:////data/karaoke.db
+      MEDIA_DIR: /data/media
+      MODELS_DIR: /models
+      WHISPER_MODEL: ${WHISPER_MODEL:-medium}
+      WHISPER_LANGUAGE: ${WHISPER_LANGUAGE:-ro}
+    volumes:
+      - data:/data
+      - models:/models
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "${PORT:-7777}:80"
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  data:
+  models:

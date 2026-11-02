@@ -29,3 +29,7 @@ def start_worker(poll_interval: float = 5.0) -> None:
             time.sleep(poll_interval)
         except Exception:
             time.sleep(poll_interval)
+
+
+if __name__ == "__main__":
+    start_worker()
