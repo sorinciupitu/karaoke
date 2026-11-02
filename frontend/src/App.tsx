@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import PlayerBar from "./components/PlayerBar";
+import Admin from "./pages/Admin";
 import Library from "./pages/Library";
 import Login from "./pages/Login";
 import Playlists from "./pages/Playlists";
@@ -47,6 +48,7 @@ export default function App() {
               <Route path="/" element={<Library />} />
               <Route path="/track/:id" element={<TrackDetail />} />
               <Route path="/playlists" element={<Playlists />} />
+              <Route path="/admin" element={<Admin />} />
             </Route>
           </Routes>
         </BrowserRouter>

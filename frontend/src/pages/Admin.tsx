@@ -1,0 +1,102 @@
+import { useCallback, useEffect, useState } from "react";
+import { Plus, Shield, Trash2 } from "lucide-react";
+import Header from "../components/Header";
+import { createUser, deleteUser, listUsers, type User } from "../api/users";
+
+export default function Admin() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const refresh = useCallback(async () => {
+    setUsers(await listUsers());
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  const create = async () => {
+    if (!username.trim() || !password) return;
+    setError("");
+    try {
+      await createUser(username.trim(), password);
+      setUsername("");
+      setPassword("");
+      await refresh();
+    } catch {
+      setError("Nu am putut crea contul (numele există probabil deja).");
+    }
+  };
+
+  const remove = async (id: number) => {
+    if (!window.confirm("Ștergi acest cont? Piesele și playlisturile lui se șterg.")) return;
+    await deleteUser(id);
+    await refresh();
+  };
+
+  return (
+    <div className="mx-auto min-h-screen max-w-2xl px-5 pb-40">
+      <Header />
+
+      <h2 className="font-display text-xl font-semibold text-cream">Conturi</h2>
+
+      <div className="mt-4 space-y-2">
+        {users.map((u) => (
+          <div
+            key={u.id}
+            className="flex items-center gap-3 rounded-xl border border-white/5 bg-surface px-4 py-2.5"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="flex items-center gap-2 text-sm text-cream">
+                {u.username}
+                {u.is_admin && (
+                  <span className="flex items-center gap-1 rounded-full bg-violet/15 px-2 py-0.5 text-xs text-violet">
+                    <Shield size={11} />
+                    admin
+                  </span>
+                )}
+              </p>
+            </div>
+            <button
+              onClick={() => remove(u.id)}
+              className="rounded-lg p-2 text-muted transition-colors hover:text-red-400"
+              aria-label="Șterge contul"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-8 space-y-3 rounded-xl border border-white/5 bg-surface p-4">
+        <p className="text-sm font-medium text-cream">Adaugă un cont</p>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Nume de utilizator"
+            className="min-w-0 flex-1 rounded-lg border border-white/10 bg-surface-2 px-3 py-2 text-sm text-cream outline-none focus:border-spotlight/60"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Parolă"
+            className="min-w-0 flex-1 rounded-lg border border-white/10 bg-surface-2 px-3 py-2 text-sm text-cream outline-none focus:border-spotlight/60"
+          />
+          <button
+            onClick={create}
+            disabled={!username.trim() || !password}
+            className="flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-spotlight px-4 py-2 text-sm font-semibold text-stage transition-colors hover:bg-amber-300 disabled:opacity-50"
+          >
+            <Plus size={15} />
+            Adaugă
+          </button>
+        </div>
+        {error && <p className="text-sm text-red-400">{error}</p>}
+      </div>
+    </div>
+  );
+}
