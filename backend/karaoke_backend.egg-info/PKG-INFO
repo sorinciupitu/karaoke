@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: karaoke-backend
+Version: 0.1.0
+Summary: Karaoke app backend
+Requires-Python: >=3.11
+Requires-Dist: fastapi>=0.111
+Requires-Dist: uvicorn[standard]>=0.30
+Requires-Dist: sqlalchemy>=2.0
+Requires-Dist: pydantic>=2.7
+Requires-Dist: pydantic-settings>=2.2
+Requires-Dist: PyJWT>=2.8
+Requires-Dist: passlib[bcrypt]>=1.7
+Requires-Dist: httpx>=0.27
+Requires-Dist: python-multipart>=0.0.9
