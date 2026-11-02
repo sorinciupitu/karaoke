@@ -1,4 +1,5 @@
 import os
+import subprocess
 from dataclasses import dataclass
 
 
@@ -27,10 +28,21 @@ def download(url: str, media_dir: str) -> DownloadResult:
         info = ydl.extract_info(url, download=True)
         if "entries" in info:
             info = info["entries"][0]
-        path = ydl.prepare_filename(info)
+        raw_path = ydl.prepare_filename(info)
+
+    # Demucs/torchaudio needs PCM WAV; yt-dlp may return webm/opus or m4a,
+    # which torchaudio cannot decode. Convert with ffmpeg (already installed).
+    wav_path = os.path.join(media_dir, f"{info['id']}.wav")
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", raw_path, "-ar", "44100", "-ac", "2", wav_path],
+        check=True,
+        capture_output=True,
+    )
+    if raw_path != wav_path and os.path.exists(raw_path):
+        os.remove(raw_path)
 
     return DownloadResult(
-        original_path=path,
+        original_path=wav_path,
         title=info.get("title") or "",
         artist=info.get("artist") or info.get("uploader") or "",
         duration=float(info.get("duration") or 0),

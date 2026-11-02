@@ -16,7 +16,10 @@ def separate(original_path: str, out_dir: str, models_dir: str) -> SeparateResul
 
     model = get_model("htdemucs")
     wav, sr = torchaudio.load(original_path)
-    wav = torchaudio.functional.resample(wav, sr, model.samplerate)
+    if sr != model.samplerate:
+        wav = torchaudio.transforms.Resample(
+            orig_freq=sr, new_freq=model.samplerate
+        )(wav)
     ref = wav.mean(0)
     wav = (wav - ref.mean()) / ref.std()
 
