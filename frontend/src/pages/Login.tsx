@@ -32,11 +32,16 @@ export default function Login() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(620px 420px at 50% 36%, rgba(255,194,75,0.10), transparent 70%)",
+            "radial-gradient(620px 420px at 50% 36%, rgba(250,42,46,0.10), transparent 70%)",
         }}
       />
       <div className="relative w-full max-w-sm">
-        <h1 className="text-center font-display text-5xl font-semibold tracking-tight text-cream">
+        <img
+          src="/app-icon.png"
+          alt="Karaoke"
+          className="mx-auto h-20 w-20 rounded-2xl shadow-[0_0_50px_rgba(250,42,46,0.3)]"
+        />
+        <h1 className="mt-5 text-center font-display text-5xl font-semibold tracking-tight text-cream">
           Karaoke
         </h1>
         <p className="mt-2 text-center text-muted">
@@ -68,7 +73,7 @@ export default function Login() {
           {error && <p className="text-sm text-red-400">{error}</p>}
           <button
             disabled={busy}
-            className="w-full rounded-lg bg-spotlight py-2.5 font-semibold text-stage transition-colors hover:bg-amber-300 disabled:opacity-50"
+            className="w-full rounded-lg bg-spotlight py-2.5 font-semibold text-white transition-colors hover:bg-red-400 disabled:opacity-50"
           >
             {busy ? "Se autentifică…" : "Intră"}
           </button>

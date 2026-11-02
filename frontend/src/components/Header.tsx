@@ -13,9 +13,12 @@ export default function Header() {
   return (
     <header className="flex items-center justify-between py-6">
       <div className="flex items-center gap-5">
-        <h1 className="font-display text-3xl font-semibold text-cream">
-          Karaoke
-        </h1>
+        <div className="flex items-center gap-2.5">
+          <img src="/app-icon.png" alt="Karaoke" className="h-8 w-8 rounded-lg" />
+          <h1 className="font-display text-3xl font-semibold text-cream">
+            Karaoke
+          </h1>
+        </div>
         <nav className="flex gap-1">
           <NavLink to="/" end className={link}>
             Bibliotecă

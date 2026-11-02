@@ -116,7 +116,7 @@ export default function LyricsEditor({ track, onSaved, onAction }: Props) {
         <button
           onClick={save}
           disabled={busy}
-          className="flex items-center gap-1.5 rounded-lg bg-spotlight px-3 py-1.5 text-sm font-semibold text-stage transition-colors hover:bg-amber-300 disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-lg bg-spotlight px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-red-400 disabled:opacity-50"
         >
           <Save size={15} />
           {saved ? "Salvat" : "Salvează versurile"}

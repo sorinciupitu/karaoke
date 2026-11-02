@@ -59,7 +59,7 @@ export default function Playlists() {
         <button
           onClick={create}
           disabled={!name.trim()}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-spotlight px-4 py-2.5 font-semibold text-stage transition-colors hover:bg-amber-300 disabled:opacity-50"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-spotlight px-4 py-2.5 font-semibold text-white transition-colors hover:bg-red-400 disabled:opacity-50"
         >
           <Plus size={18} />
           Creează
@@ -94,7 +94,7 @@ export default function Playlists() {
               <button
                 onClick={() => playQueue(selected.tracks, 0)}
                 disabled={selected.tracks.length === 0}
-                className="flex items-center gap-1.5 rounded-lg bg-spotlight px-3 py-1.5 text-sm font-semibold text-stage transition-colors hover:bg-amber-300 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-lg bg-spotlight px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-red-400 disabled:opacity-50"
               >
                 <Play size={15} />
                 Redă

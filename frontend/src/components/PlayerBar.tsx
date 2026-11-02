@@ -68,7 +68,7 @@ export default function PlayerBar() {
             </button>
             <button
               onClick={p.togglePlay}
-              className="grid h-11 w-11 place-items-center rounded-full bg-spotlight text-stage transition-colors hover:bg-amber-300"
+              className="grid h-11 w-11 place-items-center rounded-full bg-spotlight text-white transition-colors hover:bg-red-400"
             >
               {p.playing ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}
             </button>

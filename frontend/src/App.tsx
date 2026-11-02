@@ -1,6 +1,8 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
+import KaraokeFab from "./components/KaraokeFab";
+import KaraokeOverlay from "./components/KaraokeOverlay";
 import PlayerBar from "./components/PlayerBar";
 import Admin from "./pages/Admin";
 import Library from "./pages/Library";
@@ -23,9 +25,13 @@ function RequireAuth({ children }: { children: ReactNode }) {
 }
 
 function Layout() {
+  const [karaokeOpen, setKaraokeOpen] = useState(false);
+
   return (
     <>
       <Outlet />
+      <KaraokeFab onClick={() => setKaraokeOpen(true)} />
+      <KaraokeOverlay open={karaokeOpen} onClose={() => setKaraokeOpen(false)} />
       <PlayerBar />
     </>
   );

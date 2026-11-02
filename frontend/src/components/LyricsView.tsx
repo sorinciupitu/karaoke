@@ -31,7 +31,7 @@ export default function LyricsView({
             transition={{ type: "spring", stiffness: 320, damping: 26 }}
             className={`origin-left text-2xl font-medium leading-snug transition-colors duration-200 ${
               isActive
-                ? "text-spotlight drop-shadow-[0_0_18px_rgba(255,194,75,0.35)]"
+                ? "text-spotlight drop-shadow-[0_0_18px_rgba(250,42,46,0.35)]"
                 : "text-cream/40"
             }`}
           >

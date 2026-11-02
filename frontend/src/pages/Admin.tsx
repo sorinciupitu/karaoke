@@ -89,7 +89,7 @@ export default function Admin() {
           <button
             onClick={create}
             disabled={!username.trim() || !password}
-            className="flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-spotlight px-4 py-2 text-sm font-semibold text-stage transition-colors hover:bg-amber-300 disabled:opacity-50"
+            className="flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-spotlight px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-400 disabled:opacity-50"
           >
             <Plus size={15} />
             Adaugă

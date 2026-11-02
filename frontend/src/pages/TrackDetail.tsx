@@ -73,7 +73,7 @@ export default function TrackDetail() {
         {ready && (
           <button
             onClick={() => playTrack(track)}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-spotlight px-4 py-2 font-semibold text-stage transition-colors hover:bg-amber-300"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-spotlight px-4 py-2 font-semibold text-white transition-colors hover:bg-red-400"
           >
             <Play size={16} />
             Redă

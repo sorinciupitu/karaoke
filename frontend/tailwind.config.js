@@ -9,7 +9,7 @@ export default {
         "surface-2": "#2A2138",
         cream: "#F4EDE4",
         muted: "#9A93A8",
-        spotlight: "#FFC24B",
+        spotlight: "#FA2A2E",
         violet: "#B98CFF",
       },
       fontFamily: {

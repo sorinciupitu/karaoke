@@ -37,7 +37,7 @@ export default function AddTrackForm({ onSubmit }: Props) {
         />
         <button
           disabled={busy || !url.trim()}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-spotlight px-4 py-2.5 font-semibold text-stage transition-colors hover:bg-amber-300 disabled:opacity-50"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-spotlight px-4 py-2.5 font-semibold text-white transition-colors hover:bg-red-400 disabled:opacity-50"
         >
           <Plus size={18} />
           Adaugă
