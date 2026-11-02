@@ -1,8 +1,10 @@
 import { type ReactNode } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
+import PlayerBar from "./components/PlayerBar";
 import Library from "./pages/Library";
 import Login from "./pages/Login";
+import { PlayerProvider } from "./player/PlayerContext";
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -17,22 +19,34 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+function Layout() {
+  return (
+    <>
+      <Outlet />
+      <PlayerBar />
+    </>
+  );
+}
+
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <RequireAuth>
-                <Library />
-              </RequireAuth>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
+      <PlayerProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              element={
+                <RequireAuth>
+                  <Layout />
+                </RequireAuth>
+              }
+            >
+              <Route path="/" element={<Library />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </PlayerProvider>
     </AuthProvider>
   );
 }
