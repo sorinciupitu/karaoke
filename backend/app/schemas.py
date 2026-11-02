@@ -53,3 +53,55 @@ class TrackOut(BaseModel):
     lyrics_source: str | None
     language: str
     created_at: datetime
+
+
+class PlaylistCreate(BaseModel):
+    name: str
+
+
+class PlaylistUpdate(BaseModel):
+    name: str
+
+
+class PlaylistOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int
+    name: str
+    created_at: datetime
+
+
+class PlaylistDetail(BaseModel):
+    id: int
+    user_id: int
+    name: str
+    created_at: datetime
+    tracks: list[TrackOut]
+
+
+class PlaylistTrackAdd(BaseModel):
+    track_id: int
+
+
+class OrderUpdate(BaseModel):
+    track_ids: list[int]
+
+
+class SettingsOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    crossfade_enabled: bool
+    crossfade_seconds: float
+    whisper_model: str
+
+
+class SettingsUpdate(BaseModel):
+    crossfade_enabled: bool | None = None
+    crossfade_seconds: float | None = None
+    whisper_model: str | None = None
+
+
+class UserCreate(BaseModel):
+    username: str
+    password: str

@@ -8,7 +8,10 @@ from .auth import seed_admin
 from .db import Base, engine as default_engine
 from .routers import auth as auth_router
 from .routers import media as media_router
+from .routers import playlists as playlists_router
+from .routers import settings as settings_router
 from .routers import tracks as tracks_router
+from .routers import users as users_router
 
 
 def create_app(engine=None):
@@ -35,6 +38,9 @@ def create_app(engine=None):
     app.include_router(auth_router.router)
     app.include_router(tracks_router.router)
     app.include_router(media_router.router)
+    app.include_router(playlists_router.router)
+    app.include_router(settings_router.router)
+    app.include_router(users_router.router)
     return app
 
 
