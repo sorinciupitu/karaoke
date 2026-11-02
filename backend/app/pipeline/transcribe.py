@@ -22,12 +22,21 @@ def fetch_lrclib(title: str, artist: str, duration: float) -> list[Line] | None:
 
 
 def transcribe(
-    vocals_path: str, language: str, model: str, models_dir: str
+    vocals_path: str,
+    language: str,
+    model: str,
+    models_dir: str,
+    initial_prompt: str | None = None,
 ) -> list[Word]:
     from faster_whisper import WhisperModel
 
     m = WhisperModel(model, device="cpu", compute_type="int8", download_root=models_dir)
-    segments, _info = m.transcribe(vocals_path, language=language, word_timestamps=True)
+    segments, _info = m.transcribe(
+        vocals_path,
+        language=language,
+        word_timestamps=True,
+        initial_prompt=initial_prompt,
+    )
 
     words: list[Word] = []
     for seg in segments:

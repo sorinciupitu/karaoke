@@ -12,6 +12,69 @@ def _lines_to_json(lines) -> list[dict]:
     return [{"text": l.text, "start": l.start, "end": l.end} for l in lines]
 
 
+def _apply_lyrics(track: Track, db, mode: str) -> None:
+    try:
+        if mode == "transcribe":
+            words = transcribe(
+                track.vocals_path,
+                track.language,
+                settings.WHISPER_MODEL,
+                settings.MODELS_DIR,
+            )
+            track.lyrics = _lines_to_json(group_words(words))
+            track.lyrics_source = "whisper"
+        elif mode == "resync":
+            prompt = "\n".join(l["text"] for l in (track.lyrics or [])).strip()
+            words = transcribe(
+                track.vocals_path,
+                track.language,
+                settings.WHISPER_MODEL,
+                settings.MODELS_DIR,
+                initial_prompt=prompt or None,
+            )
+            track.lyrics = _lines_to_json(group_words(words))
+            track.lyrics_source = track.lyrics_source or "whisper"
+        else:  # "auto": LRCLIB first, whisper fallback
+            lines = fetch_lrclib(track.title, track.artist, track.duration or 0.0)
+            if lines:
+                track.lyrics = _lines_to_json(lines)
+                track.lyrics_source = "lrclib"
+            else:
+                words = transcribe(
+                    track.vocals_path,
+                    track.language,
+                    settings.WHISPER_MODEL,
+                    settings.MODELS_DIR,
+                )
+                track.lyrics = _lines_to_json(group_words(words))
+                track.lyrics_source = "whisper"
+        track.lyrics_status = "ready"
+    except Exception as e:
+        track.lyrics_status = "failed"
+        track.error = f"versuri: {e}"
+    db.commit()
+
+
+def run_lyrics(track_id: int, mode: str = "auto", session_factory=None) -> None:
+    factory = session_factory or SessionLocal
+    db = factory()
+    try:
+        track = db.get(Track, track_id)
+        if track is None:
+            return
+        track.lyrics_status = "syncing"
+        db.commit()
+        _apply_lyrics(track, db, mode)
+    finally:
+        db.close()
+
+
+def schedule_lyrics_job(track_id: int, mode: str) -> None:
+    import threading
+
+    threading.Thread(target=run_lyrics, args=(track_id, mode), daemon=True).start()
+
+
 def run_track(track_id: int, session_factory=None) -> None:
     factory = session_factory or SessionLocal
     db = factory()
@@ -59,26 +122,7 @@ def run_track(track_id: int, session_factory=None) -> None:
         if track.lyrics_status == "pending":
             track.lyrics_status = "syncing"
             db.commit()
-            try:
-                lines = fetch_lrclib(track.title, track.artist, track.duration or 0.0)
-                if lines:
-                    track.lyrics = _lines_to_json(lines)
-                    track.lyrics_source = "lrclib"
-                else:
-                    words = transcribe(
-                        track.vocals_path,
-                        track.language,
-                        settings.WHISPER_MODEL,
-                        settings.MODELS_DIR,
-                    )
-                    track.lyrics = _lines_to_json(group_words(words))
-                    track.lyrics_source = "whisper"
-                track.lyrics_status = "ready"
-                db.commit()
-            except Exception as e:
-                track.lyrics_status = "failed"
-                track.error = f"versuri: {e}"
-                db.commit()
+            _apply_lyrics(track, db, "auto")
 
         # 4. encode (retryable: leaves status="encoding" on failure)
         if track.status != "ready":
