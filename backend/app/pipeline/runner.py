@@ -32,7 +32,16 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
                 settings.MODELS_DIR,
                 initial_prompt=prompt or None,
             )
-            track.lyrics = _lines_to_json(group_words(words))
+            new_lines = group_words(words)
+            edited = track.lyrics or []
+            if len(new_lines) == len(edited):
+                # preserve the user's edited text, only re-time it
+                track.lyrics = [
+                    {"text": old["text"], "start": nl.start, "end": nl.end}
+                    for old, nl in zip(edited, new_lines)
+                ]
+            else:
+                track.lyrics = _lines_to_json(new_lines)
             track.lyrics_source = track.lyrics_source or "whisper"
         else:  # "auto": LRCLIB first, whisper fallback
             lines = fetch_lrclib(track.title, track.artist, track.duration or 0.0)
@@ -55,24 +64,20 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
     db.commit()
 
 
-def run_lyrics(track_id: int, mode: str = "auto", session_factory=None) -> None:
+def run_lyrics(track_id: int, mode: str | None = None, session_factory=None) -> None:
     factory = session_factory or SessionLocal
     db = factory()
     try:
         track = db.get(Track, track_id)
         if track is None:
             return
+        mode = mode or track.lyrics_mode or "auto"
         track.lyrics_status = "syncing"
+        track.lyrics_mode = None
         db.commit()
         _apply_lyrics(track, db, mode)
     finally:
         db.close()
-
-
-def schedule_lyrics_job(track_id: int, mode: str) -> None:
-    import threading
-
-    threading.Thread(target=run_lyrics, args=(track_id, mode), daemon=True).start()
 
 
 def run_track(track_id: int, session_factory=None) -> None:
@@ -124,24 +129,29 @@ def run_track(track_id: int, session_factory=None) -> None:
             db.commit()
             _apply_lyrics(track, db, "auto")
 
-        # 4. encode (retryable: leaves status="encoding" on failure)
+        # 4. encode (atomic; bounded retries before marking failed)
         if track.status != "ready":
             track.status = "encoding"
             db.commit()
             try:
-                track.instrumental_path = encode_to_m4a(
+                inst = encode_to_m4a(
                     track.instrumental_path, track.instrumental_path + ".m4a"
                 )
-                track.original_path = encode_to_m4a(
+                orig = encode_to_m4a(
                     track.original_path, track.original_path + ".m4a"
                 )
-                track.vocals_path = encode_to_m4a(
-                    track.vocals_path, track.vocals_path + ".m4a"
-                )
+                voc = encode_to_m4a(track.vocals_path, track.vocals_path + ".m4a")
             except Exception as e:
+                track.error_count = (track.error_count or 0) + 1
                 track.error = f"encodare: {e}"
+                if track.error_count >= 3:
+                    track.status = "failed"
                 db.commit()
                 return
+            track.instrumental_path = inst
+            track.original_path = orig
+            track.vocals_path = voc
+            track.error_count = 0
             track.status = "ready"
             db.commit()
     finally:

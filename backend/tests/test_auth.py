@@ -79,3 +79,19 @@ def test_logout_clears_cookie(client):
 def test_mutating_request_without_header_403(client):
     r = client.post("/auth/login", json=ADMIN)  # no X-Requested-With
     assert r.status_code == 403
+
+
+def test_login_rate_limited_after_failures(client):
+    from app.auth import reset_login_attempts
+
+    reset_login_attempts()
+    for _ in range(5):
+        r = client.post(
+            "/auth/login", json={"username": "nobody", "password": "x"}, headers=FH
+        )
+        assert r.status_code == 401
+    r = client.post(
+        "/auth/login", json={"username": "nobody", "password": "x"}, headers=FH
+    )
+    assert r.status_code == 429
+    reset_login_attempts()

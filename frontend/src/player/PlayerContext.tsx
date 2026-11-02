@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { getSettings, patchSettings } from "../api/settings";
 import type { Track } from "../api/tracks";
 import { PlayerEngine } from "../audio/player";
 
@@ -46,10 +47,19 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [instrumental, setInstrumental] = useState(true);
-  const [crossfadeEnabled, setCrossfadeEnabled] = useState(true);
-  const [crossfadeSeconds, setCrossfadeSeconds] = useState(5);
+  const [crossfadeEnabled, setCrossfadeEnabledState] = useState(true);
+  const [crossfadeSeconds, setCrossfadeSecondsState] = useState(5);
 
   const current = index >= 0 && index < queue.length ? queue[index] : null;
+
+  useEffect(() => {
+    getSettings()
+      .then((s) => {
+        setCrossfadeEnabledState(s.crossfade_enabled);
+        setCrossfadeSecondsState(s.crossfade_seconds);
+      })
+      .catch(() => {});
+  }, []);
 
   const playTrack = useCallback((t: Track) => {
     setQueue([t]);
@@ -132,7 +142,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [instrumental, current]);
 
   const toggleCrossfade = useCallback(() => {
-    setCrossfadeEnabled((v) => !v);
+    const nv = !crossfadeEnabled;
+    setCrossfadeEnabledState(nv);
+    void patchSettings({ crossfade_enabled: nv }).catch(() => {});
+  }, [crossfadeEnabled]);
+
+  const setCrossfadeSeconds = useCallback((s: number) => {
+    setCrossfadeSecondsState(s);
+    void patchSettings({ crossfade_seconds: s }).catch(() => {});
   }, []);
 
   const nextRef = useRef(next);

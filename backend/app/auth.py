@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
@@ -8,6 +9,37 @@ from sqlalchemy.orm import Session
 from .config import settings
 from .db import get_db
 from .models import User
+
+LOGIN_WINDOW_SECONDS = 900  # 15 minute
+LOGIN_MAX_ATTEMPTS = 5
+
+_login_failures: dict[str, list[float]] = {}
+
+
+def _prune_failures(username: str, now: float) -> None:
+    _login_failures[username] = [
+        t for t in _login_failures.get(username, []) if now - t < LOGIN_WINDOW_SECONDS
+    ]
+
+
+def is_login_locked(username: str, now: float | None = None) -> bool:
+    now = now if now is not None else time.time()
+    _prune_failures(username, now)
+    return len(_login_failures.get(username, [])) >= LOGIN_MAX_ATTEMPTS
+
+
+def record_login_failure(username: str, now: float | None = None) -> None:
+    now = now if now is not None else time.time()
+    _login_failures.setdefault(username, []).append(now)
+    _prune_failures(username, now)
+
+
+def clear_login_failures(username: str) -> None:
+    _login_failures.pop(username, None)
+
+
+def reset_login_attempts() -> None:
+    _login_failures.clear()
 
 
 def hash_password(pw: str) -> str:

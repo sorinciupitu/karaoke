@@ -1,8 +1,10 @@
 import time
 
+from sqlalchemy import and_, or_
+
 from ..db import SessionLocal
 from ..models import Track
-from ..pipeline.runner import run_track
+from ..pipeline.runner import run_lyrics, run_track
 
 
 def next_pending_track(session_factory=None) -> Track | None:
@@ -11,7 +13,15 @@ def next_pending_track(session_factory=None) -> Track | None:
     try:
         return (
             db.query(Track)
-            .filter(Track.status.notin_(["ready", "failed"]))
+            .filter(
+                or_(
+                    Track.status.notin_(["ready", "failed"]),
+                    and_(
+                        Track.status == "ready",
+                        Track.lyrics_status.in_(["pending", "syncing"]),
+                    ),
+                )
+            )
             .order_by(Track.id)
             .first()
         )
@@ -24,7 +34,10 @@ def start_worker(poll_interval: float = 5.0) -> None:
         try:
             track = next_pending_track()
             if track is not None:
-                run_track(track.id)
+                if track.status == "ready":
+                    run_lyrics(track.id)
+                else:
+                    run_track(track.id)
                 continue
             time.sleep(poll_interval)
         except Exception:

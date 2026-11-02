@@ -46,6 +46,8 @@ class Track(Base):
     vocals_path: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     lyrics: Mapped[list] = mapped_column(JSON, default=list)
     lyrics_source: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    lyrics_mode: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    error_count: Mapped[int] = mapped_column(Integer, default=0)
     language: Mapped[str] = mapped_column(String(16), default="ro")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 

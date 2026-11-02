@@ -1,11 +1,12 @@
+import os
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from ..auth import get_current_user
 from ..config import settings
 from ..db import get_db
-from ..models import Track, User
-from ..pipeline.runner import schedule_lyrics_job
+from ..models import PlaylistTrack, Track, User
 from ..schemas import LyricsUpdate, TrackCreate, TrackOut, TrackUpdate
 
 router = APIRouter(prefix="/api/tracks", tags=["tracks"])
@@ -79,8 +80,18 @@ def delete_track(
     user: User = Depends(get_current_user),
 ):
     track = _own_track(db, track_id, user)
+    paths = [track.instrumental_path, track.original_path, track.vocals_path]
+    db.query(PlaylistTrack).filter(PlaylistTrack.track_id == track.id).delete(
+        synchronize_session=False
+    )
     db.delete(track)
     db.commit()
+    for path in paths:
+        if path and os.path.exists(path):
+            try:
+                os.remove(path)
+            except OSError:
+                pass
 
 
 @router.post("/{track_id}/cancel", response_model=TrackOut)
@@ -105,10 +116,12 @@ def retry_track(
     user: User = Depends(get_current_user),
 ):
     track = _own_track(db, track_id, user)
-    track.status = "queued"
-    track.error = None
-    db.commit()
-    db.refresh(track)
+    if track.status == "failed":
+        track.status = "queued"
+        track.error = None
+        track.error_count = 0
+        db.commit()
+        db.refresh(track)
     return track
 
 
@@ -133,9 +146,10 @@ def resync_lyrics(
     user: User = Depends(get_current_user),
 ):
     track = _own_track(db, track_id, user)
+    track.lyrics_mode = "resync"
     track.lyrics_status = "pending"
+    track.error = None
     db.commit()
-    schedule_lyrics_job(track.id, "resync")
     db.refresh(track)
     return track
 
@@ -147,9 +161,10 @@ def refetch_lyrics(
     user: User = Depends(get_current_user),
 ):
     track = _own_track(db, track_id, user)
+    track.lyrics_mode = "auto"
     track.lyrics_status = "pending"
+    track.error = None
     db.commit()
-    schedule_lyrics_job(track.id, "auto")
     db.refresh(track)
     return track
 
@@ -161,8 +176,9 @@ def retry_lyrics(
     user: User = Depends(get_current_user),
 ):
     track = _own_track(db, track_id, user)
+    track.lyrics_mode = "transcribe"
     track.lyrics_status = "pending"
+    track.error = None
     db.commit()
-    schedule_lyrics_job(track.id, "transcribe")
     db.refresh(track)
     return track
