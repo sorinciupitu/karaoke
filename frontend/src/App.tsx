@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from "./auth/AuthContext";
 import PlayerBar from "./components/PlayerBar";
 import Library from "./pages/Library";
 import Login from "./pages/Login";
+import Playlists from "./pages/Playlists";
 import TrackDetail from "./pages/TrackDetail";
 import { PlayerProvider } from "./player/PlayerContext";
 
@@ -45,6 +46,7 @@ export default function App() {
             >
               <Route path="/" element={<Library />} />
               <Route path="/track/:id" element={<TrackDetail />} />
+              <Route path="/playlists" element={<Playlists />} />
             </Route>
           </Routes>
         </BrowserRouter>
