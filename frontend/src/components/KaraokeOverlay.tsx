@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { findActiveLineIndex } from "../audio/lyricsSync";
+import { transposeKey } from "../lib/musicKey";
 import { formatDuration } from "../lib/theme";
 import { usePlayer } from "../player/PlayerContext";
 
@@ -33,6 +34,7 @@ export default function KaraokeOverlay({
   const lines = p.current?.lyrics ?? [];
   const active = open ? findActiveLineIndex(lines, p.currentTime) : -1;
   const nextTrack = p.index >= 0 ? p.queue[p.index + 1] : null;
+  const displayedKey = transposeKey(p.current?.musical_key, p.pitch);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -86,10 +88,10 @@ export default function KaraokeOverlay({
                 </p>
               </div>
             </div>
-            {p.current.musical_key ? (
+            {displayedKey ? (
               <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-spotlight/15 px-3 py-1.5 text-xs font-bold text-spotlight backdrop-blur-md">
                 <Music2 size={14} />
-                {p.current.musical_key}
+                {displayedKey}
               </span>
             ) : (
               <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-surface-2/70 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-spotlight backdrop-blur-md">
