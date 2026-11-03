@@ -32,7 +32,7 @@ export default function KaraokeOverlay({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[60] flex flex-col bg-[#0b0a0f]"
+          className="fixed inset-0 z-[60] flex flex-col bg-stage"
         >
           <header className="flex items-start justify-between gap-4 px-5 pt-5">
             <div className="min-w-0">
@@ -67,7 +67,7 @@ export default function KaraokeOverlay({
                       ref={isActive ? activeRef : undefined}
                       className={`text-center font-medium leading-snug transition-all duration-300 ${
                         isActive
-                          ? "scale-105 text-3xl text-spotlight drop-shadow-[0_0_24px_rgba(250,42,46,0.45)]"
+                          ? "scale-105 text-3xl text-spotlight drop-shadow-[0_0_24px_rgba(247,30,77,0.45)]"
                           : "text-xl text-cream/30"
                       }`}
                     >
@@ -107,7 +107,7 @@ export default function KaraokeOverlay({
               </button>
               <button
                 onClick={p.togglePlay}
-                className="grid h-16 w-16 place-items-center rounded-full bg-spotlight text-white shadow-lg shadow-spotlight/40 transition-colors hover:bg-red-400"
+                className="grid h-16 w-16 place-items-center rounded-full bg-spotlight text-white shadow-lg shadow-spotlight/40 transition-colors hover:bg-rose"
               >
                 {p.playing ? (
                   <Pause size={26} />

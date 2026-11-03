@@ -13,11 +13,16 @@ body,
 }
 
 body {
-  background-color: #17121f;
-  color: #f4ede4;
-  font-family: "Outfit", system-ui, sans-serif;
+  background-color: #0c0b10;
+  color: #ffffff;
+  font-family: "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
 }
 
 * {

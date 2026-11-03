@@ -1,9 +1,10 @@
 import { type ReactNode, useState } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
-import KaraokeFab from "./components/KaraokeFab";
+import BottomNav from "./components/BottomNav";
 import KaraokeOverlay from "./components/KaraokeOverlay";
 import PlayerBar from "./components/PlayerBar";
+import TopBar from "./components/TopBar";
 import Admin from "./pages/Admin";
 import Library from "./pages/Library";
 import Login from "./pages/Login";
@@ -29,10 +30,13 @@ function Layout() {
 
   return (
     <>
-      <Outlet />
-      <KaraokeFab onClick={() => setKaraokeOpen(true)} />
+      <TopBar />
+      <main className="mx-auto max-w-md px-3 pb-44 pt-2">
+        <Outlet />
+      </main>
+      <PlayerBar onOpenKaraoke={() => setKaraokeOpen(true)} />
       <KaraokeOverlay open={karaokeOpen} onClose={() => setKaraokeOpen(false)} />
-      <PlayerBar />
+      <BottomNav />
     </>
   );
 }

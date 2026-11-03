@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ro"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-bright": "#393939", "on-secondary-container": "#ffbcc5", "surface-tint": "#ffb3b5", "on-background": "#e5e2e1", "background": "#131313", "surface": "#131313", "outline": "#ad8788", "on-tertiary-fixed-variant": "#670fac", "on-tertiary-container": "#400070", "on-secondary": "#670024", "inverse-surface": "#e5e2e1", "secondary": "#ffb2bd", "on-error-container": "#ffdad6", "tertiary": "#deb7ff", "error-container": "#93000a", "tertiary-fixed-dim": "#deb7ff", "on-secondary-fixed": "#400013", "surface-container-high": "#2a2a2a", "on-tertiary-fixed": "#2c0050", "primary-container": "#ff5166", "secondary-container": "#af0043", "surface-dim": "#131313", "on-surface-variant": "#e7bcbd", "on-error": "#690005", "inverse-on-surface": "#313030", "on-primary-container": "#5b0014", "surface-variant": "#353534", "primary": "#ffb3b5", "on-primary-fixed-variant": "#920027", "inverse-primary": "#be0035", "on-primary": "#680019", "primary-fixed-dim": "#ffb3b5", "surface-container-highest": "#353534", "primary-fixed": "#ffdada", "error": "#ffb4ab", "on-primary-fixed": "#40000c", "secondary-fixed-dim": "#ffb2bd", "tertiary-container": "#b76dfd", "surface-container": "#201f1f", "on-tertiary": "#4a007f", "surface-container-lowest": "#0e0e0e", "on-surface": "#e5e2e1", "on-secondary-fixed-variant": "#900036", "surface-container-low": "#1c1b1b", "secondary-fixed": "#ffd9dd", "tertiary-fixed": "#f0dbff", "outline-variant": "#5d3f40" }, borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, spacing: { "space-xl": "2.5rem", "space-sm": "0.5rem", "gutter": "1.5rem", "space-xs": "0.25rem", "space-md": "1rem", "space-lg": "1.5rem", "margin": "2rem", "gutter-mobile": "0.75rem", "margin-mobile": "1rem" }, fontFamily: { "headline-lg": ["Plus Jakarta Sans"], "label-sm": ["Inter"], "display-lg": ["Plus Jakarta Sans"], "title-lg": ["Inter"], "title-md": ["Inter"], "headline-sm": ["Plus Jakarta Sans"], "display-xl-mobile": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "body-md": ["Inter"], "body-sm": ["Inter"], "headline-lg-mobile": ["Plus Jakarta Sans"], "display-xl": ["Plus Jakarta Sans"], "label-md": ["Inter"], "body-lg": ["Inter"] }, fontSize: { "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "600" }], "display-lg": ["44px", { "lineHeight": "52px", "letterSpacing": "-0.025em", "fontWeight": "700" }], "title-lg": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "title-md": ["16px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "display-xl-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "display-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400" }], "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "display-xl": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100vh;}body{overscroll-behavior-y:none;background-color:#131313;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface antialiased flex flex-col items-center min-h-screen selection:bg-primary-container selection:text-on-primary-container"><div class="w-full max-w-md mx-auto flex flex-col relative min-h-screen"><header class="fixed top-0 w-full max-w-md z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.5)]"><div class="h-16 px-gutter-mobile flex items-center justify-between"><div class="flex items-center gap-space-xs"><img alt="karaoke-icon.png" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VNee36Benq7Sh-UhjzQlm-ZkD6TdfT2L97wODMf_jW9twj2UpGh95zLkQpyOFAq7yCB_oSAoJanXt_xcmzehrp7g5enDiR9PALX6qn6gKRkVCf9x0lXTOmJvW48JWj2F51G4S1U5J6XnASHluc2JO6bihTAiEepfxNL4DEW6DbcF75yBn73orpTKxPUktoPAfBBL6IqX2kdDizhLv67ZufNhtEa_2Q4ZRyRxlvj0HZT7hU4lBm2-5wtVg"/><div class="flex items-center gap-1.5 pl-1"><span class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight lowercase">karaoke</span><span class="w-2 h-2 rounded-full bg-primary-container shadow-[0_0_8px_#ff5166] animate-pulse"></span></div></div><div class="flex items-center gap-space-xs"><button aria-label="Notificări" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-36 bg-surface px-gutter-mobile flex-1"><div class="flex flex-col w-full gap-space-md select-none">
+<!-- Dynamic Atmospheric Glow Accent -->
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 w-72 h-36 bg-primary-container/10 blur-[80px] pointer-events-none rounded-full"></div>
+<!-- Screen Title & Search Row -->
+<div class="flex flex-col gap-space-sm pt-2">
+<div class="flex items-center justify-between">
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight font-extrabold flex items-center gap-2">
+          Biblioteca Ta
+          <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-surface-container-high text-primary text-[10px] font-bold tracking-wider uppercase">Pro</span>
+</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Stocare cloud • 93 piese pregătite offline</p>
+</div>
+<button aria-label="Creează Playlist Nou" class="w-11 h-11 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-[0_0_20px_rgba(255,81,102,0.45)] hover:scale-105 active:scale-95 transition-all" id="create-playlist-btn">
+<span class="material-symbols-outlined text-[24px]">add</span>
+</button>
+</div>
+<!-- Search Input & Quick Sort -->
+<div class="flex items-center gap-2 mt-1">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full h-11 pl-11 pr-9 rounded-full bg-surface-container-high text-on-surface placeholder:text-outline text-body-md focus:outline-none focus:bg-surface-container-highest transition-all shadow-inner" id="search-input" placeholder="Caută în piese și playlist-uri..." type="text"/>
+<button class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface" id="clear-search">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<button aria-label="Sortează" class="h-11 w-11 rounded-full bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[20px]">swap_vert</span>
+</button>
+</div>
+<!-- Filter Category Chips (Scrollable) -->
+<div class="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar -mx-gutter-mobile px-gutter-mobile">
+<button class="filter-chip active flex-shrink-0 px-4 py-1.5 rounded-full bg-primary-container text-on-primary-container font-label-md text-label-md font-bold shadow-[0_0_12px_rgba(255,81,102,0.35)] transition-all">
+        Toate (4)
+      </button>
+<button class="filter-chip flex-shrink-0 px-4 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-all">
+        Playlist-uri
+      </button>
+<button class="filter-chip flex-shrink-0 px-4 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-all">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container animate-pulse"></span>
+        Piese Izolate (AI)
+      </button>
+<button class="filter-chip flex-shrink-0 px-4 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-all">
+        Artiști
+      </button>
+<button class="filter-chip flex-shrink-0 px-4 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-all">
+        Favorite
+      </button>
+</div>
+</div>
+<!-- Pinned / Fast-Access Mosaic Grid -->
+<div class="flex flex-col gap-2 pt-1">
+<div class="flex items-center justify-between px-1">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-bold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-primary">push_pin</span>
+        Acces Rapid Fixat
+      </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Sincronizat recent</span>
+</div>
+<div class="grid grid-cols-2 gap-2.5">
+<!-- Pinned Card 1: Favorite Karaoke -->
+<div class="group relative overflow-hidden rounded-DEFAULT bg-surface-container-low hover:bg-surface-container p-3 flex flex-col justify-between transition-all duration-200 active:scale-[0.98] shadow-md" role="button" tabindex="0">
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-secondary-container to-primary-container flex items-center justify-center shadow-[0_0_16px_rgba(255,81,102,0.4)]">
+<span class="material-symbols-outlined text-on-primary-container text-[22px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</div>
+<span class="material-symbols-outlined text-primary text-[18px]">push_pin</span>
+</div>
+<div class="pt-3">
+<p class="font-title-md text-title-md text-on-surface font-bold truncate group-hover:text-primary transition-colors">Favorite Karaoke</p>
+<div class="flex items-center gap-1.5 pt-0.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant">38 piese</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Master HD</span>
+</div>
+</div>
+<div class="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+</div>
+</div>
+</div>
+<!-- Pinned Card 2: Party Night -->
+<div class="group relative overflow-hidden rounded-DEFAULT bg-surface-container-low hover:bg-surface-container p-3 flex flex-col justify-between transition-all duration-200 active:scale-[0.98] shadow-md" role="button" tabindex="0">
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-surface-container-highest to-surface-bright flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[22px]">celebration</span>
+</div>
+<div class="flex -space-x-1.5">
+<span class="w-5 h-5 rounded-full bg-primary text-on-primary text-[9px] font-bold flex items-center justify-center shadow">TG</span>
+<span class="w-5 h-5 rounded-full bg-tertiary text-on-tertiary text-[9px] font-bold flex items-center justify-center shadow">AL</span>
+</div>
+</div>
+<div class="pt-3">
+<p class="font-title-md text-title-md text-on-surface font-bold truncate group-hover:text-primary transition-colors">Party Night 🎤</p>
+<div class="flex items-center gap-1.5 pt-0.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant">24 piese</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">Colaborativ</span>
+</div>
+</div>
+<div class="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+</div>
+</div>
+</div>
+<!-- Pinned Card 3: Warm-up -->
+<div class="group relative overflow-hidden rounded-DEFAULT bg-surface-container-low hover:bg-surface-container p-3 flex flex-col justify-between transition-all duration-200 active:scale-[0.98] shadow-md" role="button" tabindex="0">
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[22px]">graphic_eq</span>
+</div>
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-primary text-[9px] font-bold tracking-tight">Auto-Pitch</span>
+</div>
+<div class="pt-3">
+<p class="font-title-md text-title-md text-on-surface font-bold truncate group-hover:text-primary transition-colors">Voce Antrenament</p>
+<div class="flex items-center gap-1.5 pt-0.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant">12 exerciții</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Warm-up</span>
+</div>
+</div>
+</div>
+<!-- Pinned Card 4: Top Hituri 2024 -->
+<div class="group relative overflow-hidden rounded-DEFAULT bg-surface-container-low hover:bg-surface-container p-3 flex flex-col justify-between transition-all duration-200 active:scale-[0.98] shadow-md" role="button" tabindex="0">
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-tertiary-container/30 to-primary-container/20 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[22px]">auto_fix_high</span>
+</div>
+<span class="px-1.5 py-0.5 rounded bg-tertiary/20 text-tertiary text-[9px] font-bold">AI Stems</span>
+</div>
+<div class="pt-3">
+<p class="font-title-md text-title-md text-on-surface font-bold truncate group-hover:text-primary transition-colors">Top Hituri 2024</p>
+<div class="flex items-center gap-1.5 pt-0.5">
+<span class="font-body-sm text-body-sm text-on-surface-variant">19 piese</span>
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span class="font-label-sm text-label-sm text-on-surface font-medium">99.8% Izolare</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Detailed Track Catalog & Stems Section -->
+<div class="flex flex-col gap-space-sm pt-2">
+<!-- Section Toolbar -->
+<div class="flex items-center justify-between px-1">
+<div>
+<h2 class="font-title-lg text-title-lg text-on-surface font-bold tracking-tight">Melodii Procesate &amp; Mix</h2>
+<span class="font-body-sm text-body-sm text-outline">Sortat după: Adăugate recent</span>
+</div>
+<div class="flex items-center gap-1 bg-surface-container-low p-0.5 rounded-full">
+<button aria-label="Vizualizare Listă" class="w-8 h-8 rounded-full bg-surface-container-highest text-primary-container flex items-center justify-center" id="view-list-btn">
+<span class="material-symbols-outlined text-[18px]">view_list</span>
+</button>
+<button aria-label="Vizualizare Grilă" class="w-8 h-8 rounded-full text-on-surface-variant hover:text-on-surface flex items-center justify-center" id="view-module-btn">
+<span class="material-symbols-outlined text-[18px]">grid_view</span>
+</button>
+</div>
+</div>
+<!-- Song List (Spotify High-Immersion Queue Rows) -->
+<div class="flex flex-col gap-1.5" id="library-track-list">
+<!-- Item 1: Blinding Lights -->
+<div class="track-row group flex items-center justify-between p-2 rounded-DEFAULT bg-surface-container-lowest hover:bg-surface-container-low transition-all active:scale-[0.99] cursor-pointer" data-artist="The Weeknd" data-title="Blinding Lights">
+<div class="flex items-center gap-3 min-w-0 flex-1">
+<div class="relative w-12 h-12 rounded-xl overflow-hidden bg-surface-container-high flex-shrink-0 shadow">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Vibrant neon red and magenta aesthetic retro synthesizer album cover art with retro 80s lighting for the Weeknd blinding lights karaoke backdrop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCU5d3Or1N8fPFfy9H4opNEkXVbs6iyOayKUkjru1-sOfGP1MjQNeeA6MR063-6vBE5FZHkmM08aUdWV9dC4nk6Kry9-K2cvVHOUumTzuYMPXYT5Zo6sTw7Q7mMMtmaxHJuxVL83w79puRprwOTCgijHzVgZfWJSsLlpkE4Ey-uz5iljmqZiY1B1C2GGvVW6S7NFFGyMQr9-5swGO4B7AeY4Iuh7uA1zwcKyaX34EQ"/>
+<div class="absolute inset-0 bg-background/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-on-surface text-[20px]">mic</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0 pr-1">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-bold truncate group-hover:text-primary transition-colors">Blinding Lights</span>
+<span class="px-1.5 py-0.2 rounded-full bg-surface-container text-secondary text-[10px] font-semibold">F#m</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">The Weeknd</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container shadow-[0_0_4px_#ff5166]"></span>
+                Negativ Studio • Sincronizat
+              </span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 flex-shrink-0">
+<button aria-label="Karaoke Direct" class="quick-mic-btn w-9 h-9 rounded-full bg-primary-container/20 text-primary-container hover:bg-primary-container hover:text-on-primary-container flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+</button>
+<button aria-label="Mai multe opțiuni" class="w-8 h-8 rounded-full text-outline hover:text-on-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Item 2: Levitating -->
+<div class="track-row group flex items-center justify-between p-2 rounded-DEFAULT bg-surface-container-lowest hover:bg-surface-container-low transition-all active:scale-[0.99] cursor-pointer" data-artist="Dua Lipa" data-title="Levitating">
+<div class="flex items-center gap-3 min-w-0 flex-1">
+<div class="relative w-12 h-12 rounded-xl overflow-hidden bg-surface-container-high flex-shrink-0 shadow">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Futuristic cosmic disco roller skating club artwork with neon indigo and violet light trails evoking high energy pop music for Dua Lipa" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDw06zNZBnb4QfaZ1y7m2aBIPSMppdYz-DKuFQ213f5RoAoypjk1z5QQLCG6F8BDBRdxrvXntLxD2hQ6IBqGDooErYW98h86VQFwOmG4_d-4I5ZR9JsxDPS_5dk6vdp8LAxo4iQr6WdSxm52sxZfVMlgLTlDQMbJ-oOkWXQd-fmiNQybR_ylYNgAbAkDujpCYvN8j9dO0Bk5zDjgYzap9NI90uyW_OKF2vE7xIe1s4"/>
+<div class="absolute inset-0 bg-background/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-on-surface text-[20px]">mic</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0 pr-1">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-bold truncate group-hover:text-primary transition-colors">Levitating</span>
+<span class="px-1.5 py-0.2 rounded-full bg-surface-container text-outline text-[10px] font-semibold">Bm</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Dua Lipa</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-tertiary">
+<span class="material-symbols-outlined text-[12px]">auto_awesome</span>
+                Instrumental AI • Crossfade Ready
+              </span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 flex-shrink-0">
+<button aria-label="Karaoke Direct" class="quick-mic-btn w-9 h-9 rounded-full bg-surface-container-high text-on-surface-variant hover:text-primary hover:bg-surface-container-highest flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+</button>
+<button aria-label="Mai multe opțiuni" class="w-8 h-8 rounded-full text-outline hover:text-on-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Item 3: Bohemian Rhapsody -->
+<div class="track-row group flex items-center justify-between p-2 rounded-DEFAULT bg-surface-container-lowest hover:bg-surface-container-low transition-all active:scale-[0.99] cursor-pointer" data-artist="Queen" data-title="Bohemian Rhapsody">
+<div class="flex items-center gap-3 min-w-0 flex-1">
+<div class="relative w-12 h-12 rounded-xl overflow-hidden bg-surface-container-high flex-shrink-0 shadow">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Classic rock opera four faces illuminated in high contrast chiaroscuro stage shadows with gold and deep crimson rim lighting for Queen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXFjwiycAXfZBv5UOg4YldFZATLKttB-B5fXvsd0itWriPclurj1xE_HUTxVQR2OeAQKPmcyU3aIjNFEtoJ1n6wDAvbAINInKUZ8Dt3_PPBVG2A7S2f4WV1-uge9eU8afzBm_UVUaE75B1N9Ubo6z0QkbhzkEIe5jFc1t47Ojg3516An-MyV5l-yPHLpQER9j_x1tSoRwtLICdQsRagCsu50MX2nQ9A_2CUO0ytfI"/>
+<div class="absolute inset-0 bg-background/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-on-surface text-[20px]">mic</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0 pr-1">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-bold truncate group-hover:text-primary transition-colors">Bohemian Rhapsody</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Queen • 5:55</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="inline-flex items-center px-2 py-0.2 rounded-full bg-tertiary-container/20 text-tertiary text-[10px] font-bold">
+                Stem Vocal 100% Izolat
+              </span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 flex-shrink-0">
+<button aria-label="Karaoke Direct" class="quick-mic-btn w-9 h-9 rounded-full bg-surface-container-high text-on-surface-variant hover:text-primary hover:bg-surface-container-highest flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+</button>
+<button aria-label="Mai multe opțiuni" class="w-8 h-8 rounded-full text-outline hover:text-on-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Item 4: Rolling in the Deep -->
+<div class="track-row group flex items-center justify-between p-2 rounded-DEFAULT bg-surface-container-lowest hover:bg-surface-container-low transition-all active:scale-[0.99] cursor-pointer" data-artist="Adele" data-title="Rolling in the Deep">
+<div class="flex items-center gap-3 min-w-0 flex-1">
+<div class="relative w-12 h-12 rounded-xl overflow-hidden bg-surface-container-high flex-shrink-0 shadow">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Moody soul singer stage portrait with dramatic warm candlelight reflections and warm amber undertones for Adele rolling in the deep style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHhUPtEgGYfon9XXcBj72y5KohoisA5JmV93gqm-Cx_4-XW2MEvz69zWEQ6Wq7lmzRMx_XNIzKWN-aMHS1L6yiKKyLA299YPFb8uKFtAXzXyjeg08KMPyZuFV_a-A-1gP5616kD7tFoOieliF8gOfkxcF6wOumJUbp_myh1KqvMreYECSD5vGi27wbD6l1xed7RvkxBg5VN5Bf9eRryNERCspn_Id6NFbOE4AmGXo"/>
+<div class="absolute inset-0 bg-background/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-on-surface text-[20px]">mic</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0 pr-1">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-bold truncate group-hover:text-primary transition-colors">Rolling in the Deep</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Adele • 3:48</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-secondary">
+<span class="material-symbols-outlined text-[13px]">tune</span>
+                Gama Ajustată (-2 st)
+              </span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 flex-shrink-0">
+<button aria-label="Karaoke Direct" class="quick-mic-btn w-9 h-9 rounded-full bg-surface-container-high text-on-surface-variant hover:text-primary hover:bg-surface-container-highest flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+</button>
+<button aria-label="Mai multe opțiuni" class="w-8 h-8 rounded-full text-outline hover:text-on-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Item 5: Flowers -->
+<div class="track-row group flex items-center justify-between p-2 rounded-DEFAULT bg-surface-container-lowest hover:bg-surface-container-low transition-all active:scale-[0.99] cursor-pointer" data-artist="Miley Cyrus" data-title="Flowers">
+<div class="flex items-center gap-3 min-w-0 flex-1">
+<div class="relative w-12 h-12 rounded-xl overflow-hidden bg-surface-container-high flex-shrink-0 shadow">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Modern pop golden hour California aesthetic sunglasses warm sun rays stylish pop icon visual for Miley Cyrus flowers song" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfTQxzmWv3PTjtRj6le4Zx7-If9drC4EQTegWjOyRJgvodJ7NmLgK1KcuB1ZwcZqAGqhry0aXz5o-Nu6I8mXE6-YnpcF6IdQbCVc4tbVfEXAANaFChzpuVqu0lmLxb_Sn2D7EjZsYgEnTJ1eQkkJ3oIDkP17ktYogQrF8LnjOvQCm5TTkaxEkABF591igJB-zDEjkl93KZ70bMm5c25mz1G5-AAXb88BK0HkToPd4"/>
+<div class="absolute inset-0 bg-background/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-on-surface text-[20px]">mic</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0 pr-1">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-bold truncate group-hover:text-primary transition-colors">Flowers</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Miley Cyrus • 3:20</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-on-surface-variant">
+<span class="material-symbols-outlined text-[13px] text-primary">translate</span>
+                Versuri Română &amp; Engleză
+              </span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 flex-shrink-0">
+<button aria-label="Karaoke Direct" class="quick-mic-btn w-9 h-9 rounded-full bg-surface-container-high text-on-surface-variant hover:text-primary hover:bg-surface-container-highest flex items-center justify-center transition-all">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+</button>
+<button aria-label="Mai multe opțiuni" class="w-8 h-8 rounded-full text-outline hover:text-on-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Floating Action Strip / Vocal Isolation Diagnostics -->
+<div class="rounded-DEFAULT bg-surface-container-low p-3.5 flex items-center justify-between shadow-lg">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-tertiary-container/30 text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">offline_bolt</span>
+</div>
+<div>
+<p class="font-title-md text-title-md text-on-surface font-bold">Descărcare Audio &amp; Cache</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">2.4 GB utilizați din 15 GB disponibili</p>
+</div>
+</div>
+<div class="flex items-center">
+<button aria-label="Curăță Cache" class="px-3 py-1.5 rounded-full bg-surface-container text-on-surface hover:text-primary text-label-sm font-label-sm font-semibold transition-colors">
+        Curăță
+      </button>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // 1. Highlight Active Tab in App Shell Navigation
+    try {
+      const biblioTab = document.querySelector('nav a[data-path="biblioteca"]');
+      const playlistTab = document.querySelector('nav a[data-path="playlist-uri"]');
+      if (biblioTab) {
+        biblioTab.classList.remove('text-on-surface-variant');
+        biblioTab.classList.add('text-primary-container', 'font-semibold');
+      } else if (playlistTab) {
+        playlistTab.classList.remove('text-on-surface-variant');
+        playlistTab.classList.add('text-primary-container', 'font-semibold');
+      }
+    } catch (e) {
+      console.warn("Tab highlight failed", e);
+    }
+
+    // 2. Chip Filtering Behavior
+    const filterChips = document.querySelectorAll('.filter-chip');
+    filterChips.forEach(chip => {
+      chip.addEventListener('click', function() {
+        filterChips.forEach(c => {
+          c.classList.remove('bg-primary-container', 'text-on-primary-container', 'font-bold', 'shadow-[0_0_12px_rgba(255,81,102,0.35)]');
+          c.classList.add('bg-surface-container', 'text-on-surface-variant');
+        });
+        this.classList.remove('bg-surface-container', 'text-on-surface-variant');
+        this.classList.add('bg-primary-container', 'text-on-primary-container', 'font-bold', 'shadow-[0_0_12px_rgba(255,81,102,0.35)]');
+      });
+    });
+
+    // 3. Search Filter Logic with Clear Button
+    const searchInput = document.getElementById('search-input');
+    const clearBtn = document.getElementById('clear-search');
+    const trackRows = document.querySelectorAll('.track-row');
+
+    if (searchInput && clearBtn) {
+      searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        clearBtn.classList.toggle('hidden', query.length === 0);
+        trackRows.forEach(row => {
+          const title = (row.getAttribute('data-title') || '').toLowerCase();
+          const artist = (row.getAttribute('data-artist') || '').toLowerCase();
+          if (title.includes(query) || artist.includes(query)) {
+            row.style.display = 'flex';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+
+      clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        clearBtn.classList.add('hidden');
+        trackRows.forEach(row => row.style.display = 'flex');
+        searchInput.focus();
+      });
+    }
+
+    // 4. Quick Karaoke Direct Launch Notification (Micro-delight)
+    const micButtons = document.querySelectorAll('.quick-mic-btn');
+    micButtons.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const parentRow = this.closest('.track-row');
+        const songTitle = parentRow ? parentRow.getAttribute('data-title') : 'Piesă';
+        
+        // Tactile bounce feedback
+        this.classList.add('scale-125');
+        setTimeout(() => this.classList.remove('scale-125'), 180);
+      });
+    });
+  })();
+</script></main><div class="fixed bottom-0 w-full max-w-md z-50 pointer-events-none"><div class="px-gutter-mobile pb-2 pointer-events-auto"><div class="bg-surface-container/90 backdrop-blur-xl rounded-DEFAULT px-space-sm py-2 flex items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.6)]"><div class="flex items-center gap-space-sm min-w-0 flex-1"><div class="w-10 h-10 rounded-DEFAULT bg-surface-container-high flex items-center justify-center flex-shrink-0 text-primary-container"><span class="material-symbols-outlined text-[20px]">mic</span></div><div class="flex flex-col min-w-0 pr-2"><span class="font-title-md text-title-md text-on-surface truncate">Toxic (Acoustic)</span><span class="font-body-sm text-body-sm text-on-surface-variant truncate">Vocal stems split • AI Ready</span></div></div><div class="flex items-center gap-1 flex-shrink-0"><button aria-label="Instrumental" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">graphic_eq</span></button><button aria-label="Redare" class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-[0_0_16px_rgba(255,81,102,0.45)] hover:scale-105 active:scale-95 transition-all"><span class="material-symbols-outlined text-[22px]">play_arrow</span></button></div></div></div><nav class="pointer-events-auto w-full pb-safe bg-[#121212]/90 backdrop-blur-2xl shadow-[0_-2px_16px_rgba(0,0,0,0.6)]" data-active-classes="text-primary-container font-semibold"><div class="flex justify-between items-center h-16 px-space-xs"><a class="flex flex-col items-center justify-center gap-1 flex-1 h-12 text-on-surface-variant hover:text-on-surface transition-all" data-path="dashboard-creare" href="#"><span class="material-symbols-outlined text-[22px]">mic_external_on</span><span class="font-label-sm text-label-sm">Creare</span></a><a class="flex flex-col items-center justify-center gap-1 flex-1 h-12 text-on-surface-variant hover:text-on-surface transition-all" data-path="playlist-uri" href="#"><span class="material-symbols-outlined text-[22px]">queue_music</span><span class="font-label-sm text-label-sm">Playlist-uri</span></a><a class="flex flex-col items-center justify-center gap-1 flex-1 h-12 text-on-surface-variant hover:text-on-surface transition-all" data-path="biblioteca" href="#"><span class="material-symbols-outlined text-[22px]">library_music</span><span class="font-label-sm text-label-sm">Bibliotecă</span></a><a class="flex flex-col items-center justify-center gap-1 flex-1 h-12 text-on-surface-variant hover:text-on-surface transition-all" data-path="cont" href="#"><span class="material-symbols-outlined text-[22px]">account_circle</span><span class="font-label-sm text-label-sm">Cont</span></a><a class="flex flex-col items-center justify-center gap-1 flex-1 h-12 text-on-surface-variant hover:text-on-surface transition-all" data-path="setari" href="#"><span class="material-symbols-outlined text-[22px]">tune</span><span class="font-label-sm text-label-sm">Setări</span></a></div></nav></div></div></body></html>

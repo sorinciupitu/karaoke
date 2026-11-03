@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { Play, Plus, Trash2 } from "lucide-react";
-import Header from "../components/Header";
 import PlaylistEditor from "../components/PlaylistEditor";
 import {
   createPlaylist,
@@ -46,8 +45,7 @@ export default function Playlists() {
   };
 
   return (
-    <div className="mx-auto min-h-screen max-w-2xl px-5 pb-40">
-      <Header />
+    <div>
 
       <div className="flex gap-2">
         <input
@@ -59,7 +57,7 @@ export default function Playlists() {
         <button
           onClick={create}
           disabled={!name.trim()}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-spotlight px-4 py-2.5 font-semibold text-white transition-colors hover:bg-red-400 disabled:opacity-50"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-spotlight px-4 py-2.5 font-semibold text-white transition-colors hover:bg-rose disabled:opacity-50"
         >
           <Plus size={18} />
           Creează
@@ -94,7 +92,7 @@ export default function Playlists() {
               <button
                 onClick={() => playQueue(selected.tracks, 0)}
                 disabled={selected.tracks.length === 0}
-                className="flex items-center gap-1.5 rounded-lg bg-spotlight px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-red-400 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-lg bg-spotlight px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-rose disabled:opacity-50"
               >
                 <Play size={15} />
                 Redă

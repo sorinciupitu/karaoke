@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { Plus, Shield, Trash2 } from "lucide-react";
-import Header from "../components/Header";
 import { createUser, deleteUser, listUsers, type User } from "../api/users";
 
 export default function Admin() {
@@ -37,8 +36,7 @@ export default function Admin() {
   };
 
   return (
-    <div className="mx-auto min-h-screen max-w-2xl px-5 pb-40">
-      <Header />
+    <div>
 
       <h2 className="font-display text-xl font-semibold text-cream">Conturi</h2>
 
@@ -89,7 +87,7 @@ export default function Admin() {
           <button
             onClick={create}
             disabled={!username.trim() || !password}
-            className="flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-spotlight px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-400 disabled:opacity-50"
+            className="flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-spotlight px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rose disabled:opacity-50"
           >
             <Plus size={15} />
             Adaugă

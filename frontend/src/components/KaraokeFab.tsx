@@ -14,7 +14,7 @@ export default function KaraokeFab({ onClick }: { onClick: () => void }) {
       whileTap={{ scale: 0.92 }}
       title="Mod karaoke"
       aria-label="Mod karaoke"
-      className="fixed bottom-36 right-4 z-50 grid h-14 w-14 place-items-center rounded-full bg-spotlight text-white shadow-lg shadow-spotlight/40 transition-colors hover:bg-red-400"
+      className="fixed bottom-36 right-4 z-50 grid h-14 w-14 place-items-center rounded-full bg-spotlight text-white shadow-lg shadow-spotlight/40 transition-colors hover:bg-rose"
     >
       <Mic2 size={22} />
     </motion.button>

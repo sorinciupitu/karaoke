@@ -53,7 +53,7 @@ export default function TrackDetail() {
   };
 
   return (
-    <div className="mx-auto min-h-screen max-w-2xl px-5 pb-40">
+    <div>
       <header className="flex items-center gap-3 py-6">
         <Link
           to="/"
@@ -73,7 +73,7 @@ export default function TrackDetail() {
         {ready && (
           <button
             onClick={() => playTrack(track)}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-spotlight px-4 py-2 font-semibold text-white transition-colors hover:bg-red-400"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-spotlight px-4 py-2 font-semibold text-white transition-colors hover:bg-rose"
           >
             <Play size={16} />
             Redă
