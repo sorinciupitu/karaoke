@@ -4,8 +4,8 @@ import tempfile
 import wave
 
 NOTE_NAMES_RO = [
-    "Do", "Do diez", "Re", "Re diez", "Mi", "Fa",
-    "Fa diez", "Sol", "Sol diez", "La", "La diez", "Si",
+    "Do", "Re bemol", "Re", "Mi bemol", "Mi", "Fa",
+    "Sol bemol", "Sol", "La bemol", "La", "Si bemol", "Si",
 ]
 
 # Krumhansl–Schmuckler key profiles (major & minor), pitch classes relative to tonic.
@@ -15,7 +15,7 @@ KS_MINOR = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.
 
 def detect_key(audio_path: str) -> str | None:
     """Detect the musical key of an audio file, returned in Romanian notation
-    (e.g. 'Do Major', 'Sol diez Minor')."""
+    (e.g. 'Do Major', 'Si bemol Minor')."""
     import numpy as np
 
     try:

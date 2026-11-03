@@ -18,14 +18,26 @@ describe("transposeKey", () => {
 
   it("transposes down and wraps past the octave", () => {
     expect(transposeKey("Do Major", -1)).toBe("Si Major");
-    expect(transposeKey("Re Major", -1)).toBe("Do diez Major");
-    expect(transposeKey("Do Major", -6)).toBe("Fa diez Major");
+    expect(transposeKey("Re Major", -1)).toBe("Re bemol Major");
+    expect(transposeKey("Do Major", -6)).toBe("Sol bemol Major");
   });
 
-  it("transposes sharps correctly and keeps the mode", () => {
-    expect(transposeKey("Sol diez Minor", 1)).toBe("La Minor");
-    expect(transposeKey("La diez Major", 1)).toBe("Si Major");
-    expect(transposeKey("Si Major", 1)).toBe("Do Major");
+  it("transposes flats correctly and keeps the mode", () => {
+    expect(transposeKey("Si bemol Minor", 1)).toBe("Si Minor");
+    expect(transposeKey("Mi bemol Major", 1)).toBe("Mi Major");
+  });
+
+  it("normalises sharp spellings to flats", () => {
+    expect(transposeKey("La diez Major", 0)).toBe("Si bemol Major");
+    expect(transposeKey("Re diez Major", 0)).toBe("Mi bemol Major");
+    expect(transposeKey("Sol diez Major", 0)).toBe("La bemol Major");
+    expect(transposeKey("Do diez Major", 0)).toBe("Re bemol Major");
+    expect(transposeKey("Fa diez Major", 0)).toBe("Sol bemol Major");
+  });
+
+  it("accepts abbreviated flat spellings", () => {
+    expect(transposeKey("Sib Minor", 0)).toBe("Si bemol Minor");
+    expect(transposeKey("Mib Major", 0)).toBe("Mi bemol Major");
   });
 
   it("treats a full octave as no change", () => {
