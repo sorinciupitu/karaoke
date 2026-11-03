@@ -3,6 +3,7 @@ from ..db import SessionLocal
 from ..models import Track
 from .download import download
 from .encode import encode_to_m4a
+from .key_detect import detect_key
 from .lyrics import group_words
 from .separate import separate
 from .transcribe import fetch_lrclib, transcribe
@@ -122,6 +123,14 @@ def run_track(track_id: int, session_factory=None) -> None:
             track.instrumental_path = res.instrumental_path
             track.vocals_path = res.vocals_path
             db.commit()
+
+        # 2.5 detect the musical key from the instrumental
+        if track.musical_key is None and track.instrumental_path:
+            try:
+                track.musical_key = detect_key(track.instrumental_path)
+                db.commit()
+            except Exception:
+                pass
 
         # 3. lyrics (independent: failure does not fail the track)
         if track.lyrics_status == "pending":

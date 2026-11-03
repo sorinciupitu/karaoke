@@ -19,6 +19,7 @@ export interface Track {
   duration: number | null;
   lyrics: Line[];
   lyrics_source: string | null;
+  musical_key: string | null;
   language: string;
   created_at: string;
 }

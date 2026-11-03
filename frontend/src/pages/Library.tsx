@@ -16,7 +16,7 @@ function stageLabel(t: Track): string {
 
 export default function Library() {
   const { user } = useAuth();
-  const { playTrack, instrumental, toggleInstrumental } = usePlayer();
+  const { playQueue, instrumental, toggleInstrumental } = usePlayer();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,6 +44,12 @@ export default function Library() {
   const onDelete = async (id: number) => {
     setTracks((prev) => prev.filter((t) => t.id !== id));
     await deleteTrack(id);
+  };
+
+  const onPlay = (t: Track) => {
+    const ready = tracks.filter((x) => x.status === "ready");
+    const idx = ready.findIndex((x) => x.id === t.id);
+    playQueue(ready, Math.max(0, idx));
   };
 
   const activeProcessing = tracks.find(
@@ -127,7 +133,7 @@ export default function Library() {
           tracks={tracks}
           loading={loading}
           onDelete={onDelete}
-          onPlay={playTrack}
+          onPlay={onPlay}
         />
       </section>
     </div>

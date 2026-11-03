@@ -6,7 +6,7 @@ import { deleteTrack, listTracks, type Track } from "../api/tracks";
 import { usePlayer } from "../player/PlayerContext";
 
 export default function LibraryPage() {
-  const { playTrack, playQueue } = usePlayer();
+  const { playQueue } = usePlayer();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +32,12 @@ export default function LibraryPage() {
   const onDelete = async (id: number) => {
     setTracks((prev) => prev.filter((t) => t.id !== id));
     await deleteTrack(id);
+  };
+
+  const onPlay = (t: Track) => {
+    const ready = tracks.filter((x) => x.status === "ready");
+    const idx = ready.findIndex((x) => x.id === t.id);
+    playQueue(ready, Math.max(0, idx));
   };
 
   const playPlaylist = async (id: number) => {
@@ -100,7 +106,7 @@ export default function LibraryPage() {
           tracks={tracks}
           loading={loading}
           onDelete={onDelete}
-          onPlay={playTrack}
+          onPlay={onPlay}
         />
       </section>
     </div>

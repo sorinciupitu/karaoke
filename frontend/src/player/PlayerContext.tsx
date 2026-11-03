@@ -60,14 +60,33 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!playing) return;
     let lock: { release: () => Promise<void> } | null = null;
+    let cancelled = false;
     const nav = navigator as Navigator & {
       wakeLock?: { request: (t: "screen") => Promise<{ release: () => Promise<void> }> };
     };
-    nav.wakeLock
-      ?.request("screen")
-      .then((l) => (lock = l))
-      .catch(() => {});
+
+    const acquire = async () => {
+      if (cancelled || !nav.wakeLock) return;
+      try {
+        lock = await nav.wakeLock.request("screen");
+        lock.addEventListener("release", () => {
+          // re-acquire if we were released (e.g. after a screen lock) while still playing
+          if (!cancelled && document.visibilityState === "visible") acquire();
+        });
+      } catch {
+        // unsupported / non-secure context
+      }
+    };
+    void acquire();
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void acquire();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
     return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisibility);
       lock?.release().catch(() => {});
     };
   }, [playing]);
@@ -122,8 +141,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [index, queue, crossfadeEnabled, crossfadeSeconds, instrumental, pitch]);
 
   const prev = useCallback(() => {
-    if (index < 0) return;
-    if (engine.currentTime > 3 || index === 0) {
+    if (index <= 0) {
       engine.seek(0);
       setCurrentTime(0);
       return;

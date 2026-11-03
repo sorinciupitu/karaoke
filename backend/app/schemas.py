@@ -51,6 +51,7 @@ class TrackOut(BaseModel):
     duration: float | None
     lyrics: list
     lyrics_source: str | None
+    musical_key: str | None
     language: str
     created_at: datetime
 

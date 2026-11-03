@@ -6,6 +6,7 @@ import {
   Mic,
   MicOff,
   Minus,
+  Music2,
   Pause,
   Play,
   Plus,
@@ -85,10 +86,17 @@ export default function KaraokeOverlay({
                 </p>
               </div>
             </div>
-            <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-surface-2/70 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-spotlight backdrop-blur-md">
-              <Sparkles size={14} />
-              AI STEM
-            </span>
+            {p.current.musical_key ? (
+              <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-spotlight/15 px-3 py-1.5 text-xs font-bold text-spotlight backdrop-blur-md">
+                <Music2 size={14} />
+                {p.current.musical_key}
+              </span>
+            ) : (
+              <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-surface-2/70 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-spotlight backdrop-blur-md">
+                <Sparkles size={14} />
+                AI STEM
+              </span>
+            )}
           </header>
 
           {/* lyric teleprompter */}
