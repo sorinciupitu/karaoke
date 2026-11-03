@@ -7,16 +7,19 @@ RUN apt-get update \
 
 WORKDIR /app
 
-# CPU-only PyTorch, pinned. torch 2.4.1 gates its CUDA deps to x86_64,
-# so on arm64 (Apple Silicon) it stays CPU-only and skips the ~3 GB CUDA
-# toolkit that torch>=2.15 pulls on all Linux platforms.
+# CPU-only PyTorch, pinned. torch 2.4.1 gates its CUDA deps to x86_64, so on
+# arm64 (Apple Silicon) it stays CPU-only and skips the ~3 GB CUDA toolkit.
 RUN pip install --no-cache-dir torch==2.4.1 torchaudio==2.4.1
 
-# Install the heavy Python dependencies in their own cacheable layer, BEFORE
-# the app code. demucs pulls sphn, which compiles native Rust on arm64 — a
-# multi-GB build. Keeping it here means app-code changes don't re-run it.
+# Heavy dependencies in their own cacheable layer, BEFORE the app code.
+#
+# demucs is installed WITHOUT its `sphn` dependency: sphn compiles native Rust
+# on arm64 (multi-GB, and it fills Docker's disk), but it is only used by
+# demucs's CLI audio loader (demucs.api). Our separation (pipeline/separate.py)
+# loads audio with torchaudio directly, so sphn is never needed at runtime.
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir \
+RUN pip install --no-cache-dir --no-deps demucs==4.1.0 \
+    && pip install --no-cache-dir \
         "fastapi>=0.111" \
         "uvicorn[standard]>=0.30" \
         "sqlalchemy>=2.0" \
@@ -27,9 +30,9 @@ RUN pip install --no-cache-dir \
         "httpx>=0.27" \
         "python-multipart>=0.0.9" \
         "yt-dlp>=2024.0.0" \
-        "demucs>=4.0.0" \
         "faster-whisper>=1.0.0" \
-        "soundfile>=0.12.0"
+        "soundfile>=0.12.0" \
+        einops huggingface-hub "julius>=0.2.3" "lameenc>=1.2" pyyaml safetensors tqdm
 
 # Install only our own package (pure Python, no deps) — fast to rebuild.
 COPY app ./app
