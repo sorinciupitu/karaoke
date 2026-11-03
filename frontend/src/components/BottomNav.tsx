@@ -1,9 +1,10 @@
 import { NavLink } from "react-router-dom";
-import { ListMusic, Mic, User } from "lucide-react";
+import { Library, ListMusic, Mic, User } from "lucide-react";
 
 const tabs = [
   { to: "/", label: "Creare", icon: Mic, end: true },
   { to: "/playlists", label: "Playlist-uri", icon: ListMusic, end: false },
+  { to: "/library", label: "Bibliotecă", icon: Library, end: false },
   { to: "/admin", label: "Cont", icon: User, end: false },
 ];
 

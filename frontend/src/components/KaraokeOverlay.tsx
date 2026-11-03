@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  Layers,
   ListMusic,
   Mic,
   MicOff,
@@ -27,7 +28,6 @@ export default function KaraokeOverlay({
   onClose: () => void;
 }) {
   const p = usePlayer();
-  const [pitch, setPitch] = useState(0);
 
   const lines = p.current?.lyrics ?? [];
   const active = open ? findActiveLineIndex(lines, p.currentTime) : -1;
@@ -91,21 +91,6 @@ export default function KaraokeOverlay({
             </span>
           </header>
 
-          {/* info ribbon */}
-          <div className="relative mt-4 flex items-center justify-between gap-2 px-5">
-            <span className="flex items-center gap-2 rounded-full bg-surface-2/70 px-3 py-1.5 text-xs text-cream backdrop-blur-md">
-              <span className="h-2 w-2 animate-ping rounded-full bg-spotlight" />
-              Mic Calibrat
-            </span>
-            <span className="flex items-center gap-1.5 rounded-full bg-surface-2/70 px-3 py-1.5 text-xs font-semibold text-cream backdrop-blur-md">
-              PITCH: {pitch > 0 ? `+${pitch}` : pitch}
-            </span>
-            <span className="flex items-center gap-1.5 rounded-full bg-surface-2/70 px-2.5 py-1.5 text-xs font-bold text-violet backdrop-blur-md">
-              <span className="h-1.5 w-1.5 rounded-full bg-violet" />
-              LIVE
-            </span>
-          </div>
-
           {/* lyric teleprompter */}
           <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-6 py-4">
             {lines.length === 0 ? (
@@ -133,9 +118,6 @@ export default function KaraokeOverlay({
                           </div>
                           <p className="font-display text-3xl font-extrabold leading-tight text-spotlight drop-shadow-[0_0_24px_rgba(247,30,77,0.45)]">
                             {lines[i].text}
-                          </p>
-                          <p className="mt-3 text-[11px] uppercase tracking-widest text-muted/60">
-                            ♪ sincronizat
                           </p>
                         </div>
                       ) : (
@@ -173,70 +155,65 @@ export default function KaraokeOverlay({
 
           {/* studio controls */}
           <div className="relative mt-4 grid grid-cols-3 gap-2 px-5">
-            <div className="rounded-2xl bg-surface p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="flex items-center gap-1 text-[10px] font-semibold uppercase text-muted">
-                  <Mic size={13} /> Voce
-                </span>
-              </div>
+            <div className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-surface p-3">
               <button
                 onClick={p.toggleInstrumental}
-                className={`flex w-full items-center justify-center gap-1.5 rounded-full py-2 text-xs font-bold transition-all active:scale-95 ${
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition-all active:scale-95 ${
                   p.instrumental
                     ? "bg-spotlight text-white shadow-[0_0_16px_rgba(247,30,77,0.45)]"
                     : "bg-surface-3 text-cream"
                 }`}
+                aria-label="Comută vocea"
+                title={p.instrumental ? "Voce oprită" : "Voce activă"}
               >
-                {p.instrumental ? <MicOff size={14} /> : <Mic size={14} />}
-                {p.instrumental ? "VOCE OPRITĂ" : "VOCE ACTIVĂ"}
+                {p.instrumental ? <MicOff size={18} /> : <Mic size={18} />}
               </button>
+              <span className="text-[10px] font-semibold uppercase text-muted">
+                Voce
+              </span>
             </div>
 
-            <div className="rounded-2xl bg-surface p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="flex items-center gap-1 text-[10px] font-semibold uppercase text-muted">
-                  Tonalitate
-                </span>
-                <span className="text-sm font-bold text-cream">
-                  {pitch > 0 ? `+${pitch}` : pitch}
-                </span>
-              </div>
-              <div className="flex items-center justify-between rounded-full bg-surface-3 p-1">
+            <div className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-surface p-3">
+              <div className="flex items-center gap-1.5">
                 <button
-                  onClick={() => setPitch((v) => Math.max(-4, v - 1))}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-2 text-cream transition-transform active:scale-90"
+                  onClick={() => p.changePitch(Math.max(-6, p.pitch - 1))}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-cream transition-transform active:scale-90"
+                  aria-label="Scade tonalitatea"
                 >
-                  <Minus size={14} />
+                  <Minus size={15} />
                 </button>
-                <span className="text-[10px] text-muted">Semiton</span>
+                <span className="w-8 text-center text-sm font-bold text-cream">
+                  {p.pitch > 0 ? `+${p.pitch}` : p.pitch}
+                </span>
                 <button
-                  onClick={() => setPitch((v) => Math.min(4, v + 1))}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-2 text-cream transition-transform active:scale-90"
+                  onClick={() => p.changePitch(Math.min(6, p.pitch + 1))}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-cream transition-transform active:scale-90"
+                  aria-label="Crește tonalitatea"
                 >
-                  <Plus size={14} />
+                  <Plus size={15} />
                 </button>
               </div>
+              <span className="text-[10px] font-semibold uppercase text-muted">
+                Tonalitate
+              </span>
             </div>
 
-            <div className="rounded-2xl bg-surface p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="flex items-center gap-1 text-[10px] font-semibold uppercase text-muted">
-                  Crossfade
-                </span>
-                <span className="text-[10px] font-bold text-spotlight">
-                  {p.crossfadeSeconds}s AUTO
-                </span>
-              </div>
+            <div className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-surface p-3">
               <button
                 onClick={p.toggleCrossfade}
-                className={`flex w-full items-center justify-center gap-1.5 rounded-full py-2 text-xs font-semibold transition-all active:scale-95 ${
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition-all active:scale-95 ${
                   p.crossfadeEnabled
                     ? "bg-spotlight/20 text-spotlight"
                     : "bg-surface-3 text-cream"
                 }`}
+                aria-label="Comută crossfade"
+                title="Crossfade"
               >
-                Mix Petrecere
+                <Layers size={18} />
               </button>
+              <span className="text-[10px] font-semibold uppercase text-muted">
+                Mix
+              </span>
             </div>
           </div>
 

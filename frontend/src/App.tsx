@@ -7,6 +7,7 @@ import PlayerBar from "./components/PlayerBar";
 import TopBar from "./components/TopBar";
 import Admin from "./pages/Admin";
 import Library from "./pages/Library";
+import LibraryPage from "./pages/LibraryPage";
 import Login from "./pages/Login";
 import Playlists from "./pages/Playlists";
 import TrackDetail from "./pages/TrackDetail";
@@ -56,6 +57,7 @@ export default function App() {
               }
             >
               <Route path="/" element={<Library />} />
+              <Route path="/library" element={<LibraryPage />} />
               <Route path="/track/:id" element={<TrackDetail />} />
               <Route path="/playlists" element={<Playlists />} />
               <Route path="/admin" element={<Admin />} />

@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from ..auth import get_current_user
 from ..db import get_db
-from ..media import build_media_response
+from ..media import build_media_response, get_pitched_path
 from ..models import Track, User
 
 router = APIRouter(prefix="/media", tags=["media"])
@@ -20,6 +20,7 @@ def get_media(
     track_id: int,
     stream: str,
     request: Request,
+    pitch: int = Query(0, ge=-6, le=6),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
@@ -33,5 +34,8 @@ def get_media(
     path = getattr(track, _STREAMS[stream])
     if not path:
         raise HTTPException(status_code=404, detail="fișier indisponibil")
+
+    if stream in ("instrumental", "original") and pitch:
+        path = get_pitched_path(path, pitch)
 
     return build_media_response(path, request.headers.get("range"))

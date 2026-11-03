@@ -23,6 +23,7 @@ interface PlayerContextValue {
   instrumental: boolean;
   crossfadeEnabled: boolean;
   crossfadeSeconds: number;
+  pitch: number;
   playTrack: (t: Track) => void;
   playQueue: (tracks: Track[], startIndex: number) => void;
   next: () => void;
@@ -32,12 +33,14 @@ interface PlayerContextValue {
   toggleInstrumental: () => void;
   toggleCrossfade: () => void;
   setCrossfadeSeconds: (s: number) => void;
+  changePitch: (semitones: number) => void;
 }
 
 const Ctx = createContext<PlayerContextValue | null>(null);
 
-function srcFor(t: Track, instrumental: boolean) {
-  return `/media/${t.id}/${instrumental ? "instrumental" : "original"}`;
+function srcFor(t: Track, instrumental: boolean, pitch: number) {
+  const base = `/media/${t.id}/${instrumental ? "instrumental" : "original"}`;
+  return pitch !== 0 ? `${base}?pitch=${pitch}` : base;
 }
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
@@ -49,8 +52,25 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [instrumental, setInstrumental] = useState(true);
   const [crossfadeEnabled, setCrossfadeEnabledState] = useState(true);
   const [crossfadeSeconds, setCrossfadeSecondsState] = useState(5);
+  const [pitch, setPitch] = useState(0);
 
   const current = index >= 0 && index < queue.length ? queue[index] : null;
+
+  // screen wake lock while playing (so the display doesn't sleep mid-song)
+  useEffect(() => {
+    if (!playing) return;
+    let lock: { release: () => Promise<void> } | null = null;
+    const nav = navigator as Navigator & {
+      wakeLock?: { request: (t: "screen") => Promise<{ release: () => Promise<void> }> };
+    };
+    nav.wakeLock
+      ?.request("screen")
+      .then((l) => (lock = l))
+      .catch(() => {});
+    return () => {
+      lock?.release().catch(() => {});
+    };
+  }, [playing]);
 
   useEffect(() => {
     getSettings()
@@ -66,7 +86,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setIndex(0);
     setDuration(t.duration ?? 0);
     setPlaying(true);
-    void engine.play(srcFor(t, true));
+    void engine.play(srcFor(t, true, 0));
   }, []);
 
   const playQueue = useCallback(
@@ -77,10 +97,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       if (t) {
         setDuration(t.duration ?? 0);
         setPlaying(true);
-        void engine.play(srcFor(t, instrumental));
+        void engine.play(srcFor(t, instrumental, pitch));
       }
     },
-    [instrumental],
+    [instrumental, pitch],
   );
 
   const next = useCallback(() => {
@@ -95,11 +115,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setIndex(ni);
     setPlaying(true);
     if (crossfadeEnabled) {
-      void engine.crossfadeTo(srcFor(t, instrumental), crossfadeSeconds);
+      void engine.crossfadeTo(srcFor(t, instrumental, pitch), crossfadeSeconds);
     } else {
-      void engine.play(srcFor(t, instrumental));
+      void engine.play(srcFor(t, instrumental, pitch));
     }
-  }, [index, queue, crossfadeEnabled, crossfadeSeconds, instrumental]);
+  }, [index, queue, crossfadeEnabled, crossfadeSeconds, instrumental, pitch]);
 
   const prev = useCallback(() => {
     if (index < 0) return;
@@ -113,8 +133,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setIndex(ni);
     setDuration(t.duration ?? 0);
     setPlaying(true);
-    void engine.play(srcFor(t, instrumental));
-  }, [index, queue, instrumental]);
+    void engine.play(srcFor(t, instrumental, pitch));
+  }, [index, queue, instrumental, pitch]);
 
   const togglePlay = useCallback(() => {
     if (!current) return;
@@ -137,9 +157,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setInstrumental(nv);
     if (current) {
       const time = engine.currentTime;
-      void engine.play(srcFor(current, nv)).then(() => engine.seek(time));
+      void engine.play(srcFor(current, nv, pitch)).then(() => engine.seek(time));
     }
-  }, [instrumental, current]);
+  }, [instrumental, current, pitch]);
 
   const toggleCrossfade = useCallback(() => {
     const nv = !crossfadeEnabled;
@@ -151,6 +171,19 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setCrossfadeSecondsState(s);
     void patchSettings({ crossfade_seconds: s }).catch(() => {});
   }, []);
+
+  const changePitch = useCallback(
+    (n: number) => {
+      setPitch(n);
+      if (current) {
+        const time = engine.currentTime;
+        void engine.play(srcFor(current, instrumental, n)).then(() =>
+          engine.seek(time),
+        );
+      }
+    },
+    [current, instrumental],
+  );
 
   const nextRef = useRef(next);
   useEffect(() => {
@@ -183,6 +216,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         instrumental,
         crossfadeEnabled,
         crossfadeSeconds,
+        pitch,
         playTrack,
         playQueue,
         next,
@@ -192,6 +226,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         toggleInstrumental,
         toggleCrossfade,
         setCrossfadeSeconds,
+        changePitch,
       }}
     >
       {children}

@@ -1,5 +1,6 @@
 import os
 import re
+import subprocess
 
 from fastapi import HTTPException
 from fastapi.responses import Response
@@ -17,6 +18,30 @@ def _media_type(path: str) -> str:
         return "audio/mpeg"
     return "application/octet-stream"
 
+
+def get_pitched_path(path: str, semitones: int) -> str:
+    """Return the path to a pitch-shifted copy of `path` (cached on disk).
+
+    Uses ffmpeg's tempo-preserving pitch shift: asetrate + aresample + atempo.
+    """
+    if not semitones:
+        return path
+
+    base, ext = os.path.splitext(path)
+    sign = "+" if semitones > 0 else ""
+    pitched = f"{base}_pitch{sign}{semitones}{ext}"
+    if os.path.exists(pitched):
+        return pitched
+
+    factor = 2 ** (semitones / 12)
+    sr = 44100
+    filt = f"asetrate={sr}*{factor:.6f},aresample={sr},atempo={1 / factor:.6f}"
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", path, "-af", filt, "-c:a", "aac", "-b:a", "192k", pitched],
+        check=True,
+        capture_output=True,
+    )
+    return pitched
 
 def _parse_range(range_header: str | None, size: int):
     """Return 'invalid', 'unsatisfiable', None (full), or (start, end) inclusive."""

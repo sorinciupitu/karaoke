@@ -1,19 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Flame, Search } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Flame } from "lucide-react";
 import AddTrackForm from "../components/AddTrackForm";
-import TrackCard from "../components/TrackCard";
+import TrackBrowser from "../components/TrackBrowser";
 import { createTrack, deleteTrack, listTracks, type Track } from "../api/tracks";
 import { useAuth } from "../auth/AuthContext";
 import { usePlayer } from "../player/PlayerContext";
-
-type Filter = "toate" | "gata" | "procesare" | "esuate";
-
-const FILTERS: { key: Filter; label: string }[] = [
-  { key: "toate", label: "Toate" },
-  { key: "gata", label: "Gata" },
-  { key: "procesare", label: "Procesare" },
-  { key: "esuate", label: "Eșuate" },
-];
 
 function stageLabel(t: Track): string {
   if (t.status === "downloading") return "Descărcare audio";
@@ -28,8 +19,6 @@ export default function Library() {
   const { playTrack, instrumental, toggleInstrumental } = usePlayer();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<Filter>("toate");
 
   const refresh = useCallback(async () => {
     try {
@@ -61,23 +50,6 @@ export default function Library() {
     (t) => t.status !== "ready" && t.status !== "failed",
   );
 
-  const filtered = useMemo(() => {
-    let list = tracks;
-    if (filter === "gata") list = list.filter((t) => t.status === "ready");
-    else if (filter === "procesare")
-      list = list.filter((t) => t.status !== "ready" && t.status !== "failed");
-    else if (filter === "esuate") list = list.filter((t) => t.status === "failed");
-    const q = query.trim().toLowerCase();
-    if (q) {
-      list = list.filter(
-        (t) =>
-          t.title.toLowerCase().includes(q) ||
-          t.artist.toLowerCase().includes(q),
-      );
-    }
-    return list;
-  }, [tracks, filter, query]);
-
   return (
     <div>
       <section className="flex items-center justify-between pt-2">
@@ -99,7 +71,6 @@ export default function Library() {
 
       <AddTrackForm onSubmit={onAdd} />
 
-      {/* processing stepper */}
       {activeProcessing && (
         <section className="mt-4 rounded-2xl bg-surface p-4 shadow-md">
           <div className="flex items-center justify-between">
@@ -124,13 +95,10 @@ export default function Library() {
         </section>
       )}
 
-      {/* quick vocal toggle */}
       {tracks.some((t) => t.status === "ready") && (
         <button
           onClick={toggleInstrumental}
-          className={`mt-3 flex w-full items-center justify-between rounded-2xl bg-surface px-4 py-3 shadow-md ${
-            instrumental ? "" : "opacity-80"
-          }`}
+          className="mt-3 flex w-full items-center justify-between rounded-2xl bg-surface px-4 py-3 shadow-md"
         >
           <span className="text-sm font-semibold text-cream">
             {instrumental ? "Instrumental • Karaoke" : "Voce originală"}
@@ -149,62 +117,18 @@ export default function Library() {
         </button>
       )}
 
-      {/* search + filters */}
-      <div className="mt-4 flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-dim" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Caută în piese…"
-            className="h-11 w-full rounded-full bg-surface-3 pl-10 pr-4 text-cream outline-none placeholder:text-dim"
-          />
-        </div>
-      </div>
-      <div className="mt-2 flex items-center gap-2 overflow-x-auto pb-1">
-        {FILTERS.map((f) => (
-          <button
-            key={f.key}
-            onClick={() => setFilter(f.key)}
-            className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
-              filter === f.key
-                ? "bg-spotlight text-white shadow-[0_0_12px_rgba(247,30,77,0.35)]"
-                : "bg-surface text-muted hover:text-cream"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
-      {/* tracks */}
-      <section className="mt-4">
+      <section className="mt-5">
         <div className="mb-2 flex items-center justify-between px-1">
           <h2 className="font-display text-lg font-bold text-cream">
             Piese recente
           </h2>
         </div>
-
-        <div className="flex flex-col gap-2">
-          {loading ? (
-            <p className="py-8 text-center text-muted">Se încarcă…</p>
-          ) : filtered.length === 0 ? (
-            <p className="py-10 text-center text-sm text-muted">
-              {tracks.length === 0
-                ? "Biblioteca e goală. Adaugă un link YouTube mai sus."
-                : "Nicio piesă nu corespunde filtrului."}
-            </p>
-          ) : (
-            filtered.map((t) => (
-              <TrackCard
-                key={t.id}
-                track={t}
-                onDelete={onDelete}
-                onPlay={playTrack}
-              />
-            ))
-          )}
-        </div>
+        <TrackBrowser
+          tracks={tracks}
+          loading={loading}
+          onDelete={onDelete}
+          onPlay={playTrack}
+        />
       </section>
     </div>
   );
