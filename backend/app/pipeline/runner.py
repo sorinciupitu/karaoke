@@ -16,39 +16,8 @@ def _lines_to_json(lines) -> list[dict]:
 def _apply_lyrics(track: Track, db, mode: str) -> None:
     try:
         if mode == "transcribe":
-            words = transcribe(
-                track.vocals_path,
-                track.language,
-                settings.WHISPER_MODEL,
-                settings.MODELS_DIR,
-            )
-            track.lyrics = _lines_to_json(group_words(words))
-            track.lyrics_source = "whisper"
-        elif mode == "resync":
-            prompt = "\n".join(l["text"] for l in (track.lyrics or [])).strip()
-            words = transcribe(
-                track.vocals_path,
-                track.language,
-                settings.WHISPER_MODEL,
-                settings.MODELS_DIR,
-                initial_prompt=prompt or None,
-            )
-            new_lines = group_words(words)
-            edited = track.lyrics or []
-            if len(new_lines) == len(edited):
-                # preserve the user's edited text, only re-time it
-                track.lyrics = [
-                    {"text": old["text"], "start": nl.start, "end": nl.end}
-                    for old, nl in zip(edited, new_lines)
-                ]
-            else:
-                track.lyrics = _lines_to_json(new_lines)
-            track.lyrics_source = track.lyrics_source or "whisper"
-        else:  # "auto": LRCLIB first, whisper fallback
-            lines = fetch_lrclib(track.title, track.artist, track.duration or 0.0)
-            if lines:
-                track.lyrics = _lines_to_json(lines)
-                track.lyrics_source = "lrclib"
+            if not track.vocals_path:
+                track.lyrics = track.lyrics or []
             else:
                 words = transcribe(
                     track.vocals_path,
@@ -58,6 +27,46 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
                 )
                 track.lyrics = _lines_to_json(group_words(words))
                 track.lyrics_source = "whisper"
+        elif mode == "resync":
+            if not track.vocals_path:
+                track.lyrics = track.lyrics or []
+            else:
+                prompt = "\n".join(l["text"] for l in (track.lyrics or [])).strip()
+                words = transcribe(
+                    track.vocals_path,
+                    track.language,
+                    settings.WHISPER_MODEL,
+                    settings.MODELS_DIR,
+                    initial_prompt=prompt or None,
+                )
+                new_lines = group_words(words)
+                edited = track.lyrics or []
+                if len(new_lines) == len(edited):
+                    # preserve the user's edited text, only re-time it
+                    track.lyrics = [
+                        {"text": old["text"], "start": nl.start, "end": nl.end}
+                        for old, nl in zip(edited, new_lines)
+                    ]
+                else:
+                    track.lyrics = _lines_to_json(new_lines)
+                track.lyrics_source = track.lyrics_source or "whisper"
+        else:  # "auto": LRCLIB first, whisper fallback
+            lines = fetch_lrclib(track.title, track.artist, track.duration or 0.0)
+            if lines:
+                track.lyrics = _lines_to_json(lines)
+                track.lyrics_source = "lrclib"
+            elif track.vocals_path:
+                words = transcribe(
+                    track.vocals_path,
+                    track.language,
+                    settings.WHISPER_MODEL,
+                    settings.MODELS_DIR,
+                )
+                track.lyrics = _lines_to_json(group_words(words))
+                track.lyrics_source = "whisper"
+            else:
+                track.lyrics = []
+                track.lyrics_source = None
         track.lyrics_status = "ready"
     except Exception as e:
         track.lyrics_status = "failed"
@@ -107,8 +116,10 @@ def run_track(track_id: int, session_factory=None) -> None:
             track.youtube_id = res.youtube_id
             db.commit()
 
-        # 2. separate
-        if not track.instrumental_path or not track.vocals_path:
+        # 2. separate (skipped for already-instrumental uploads)
+        if track.needs_separation and not (
+            track.instrumental_path and track.vocals_path
+        ):
             track.status = "separating"
             db.commit()
             try:
@@ -146,10 +157,17 @@ def run_track(track_id: int, session_factory=None) -> None:
                 inst = encode_to_m4a(
                     track.instrumental_path, track.instrumental_path + ".m4a"
                 )
-                orig = encode_to_m4a(
-                    track.original_path, track.original_path + ".m4a"
+                if track.original_path and track.original_path != track.instrumental_path:
+                    orig = encode_to_m4a(
+                        track.original_path, track.original_path + ".m4a"
+                    )
+                else:
+                    orig = inst
+                voc = (
+                    encode_to_m4a(track.vocals_path, track.vocals_path + ".m4a")
+                    if track.vocals_path
+                    else None
                 )
-                voc = encode_to_m4a(track.vocals_path, track.vocals_path + ".m4a")
             except Exception as e:
                 track.error_count = (track.error_count or 0) + 1
                 track.error = f"encodare: {e}"

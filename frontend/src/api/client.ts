@@ -16,7 +16,7 @@ export async function api<T = unknown>(
   const headers: Record<string, string> = {
     ...((init.headers as Record<string, string>) ?? {}),
   };
-  if (init.body && !headers["Content-Type"]) {
+  if (init.body && !headers["Content-Type"] && !(init.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
   }
   if (MUTATIONS.has(method)) {

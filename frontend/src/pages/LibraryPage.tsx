@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ListMusic, Play } from "lucide-react";
 import TrackBrowser from "../components/TrackBrowser";
+import UploadTrack from "../components/UploadTrack";
 import { getPlaylist, listPlaylists, type Playlist } from "../api/playlists";
 import { deleteTrack, listTracks, type Track } from "../api/tracks";
 import { usePlayer } from "../player/PlayerContext";
@@ -59,6 +60,8 @@ export default function LibraryPage() {
           </p>
         </div>
       </section>
+
+      <UploadTrack onUploaded={refresh} />
 
       {/* pinned cards */}
       <div className="mt-4 grid grid-cols-2 gap-2.5">

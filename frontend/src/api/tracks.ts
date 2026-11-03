@@ -39,6 +39,23 @@ export function createTrack(youtube_url: string): Promise<Track> {
   });
 }
 
+export interface UploadTrackOptions {
+  title?: string;
+  artist?: string;
+  remove_vocals: boolean;
+  lyrics: boolean;
+}
+
+export function uploadTrack(file: File, opts: UploadTrackOptions): Promise<Track> {
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("title", opts.title ?? "");
+  fd.append("artist", opts.artist ?? "");
+  fd.append("remove_vocals", String(opts.remove_vocals));
+  fd.append("lyrics", String(opts.lyrics));
+  return api<Track>("/api/tracks/upload", { method: "POST", body: fd });
+}
+
 export function updateTrack(
   id: number,
   patch: { title?: string; artist?: string; language?: string },

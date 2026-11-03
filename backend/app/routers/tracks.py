@@ -1,15 +1,20 @@
 import os
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from ..auth import get_current_user
 from ..config import settings
 from ..db import get_db
 from ..models import PlaylistTrack, Track, User
+from ..pipeline.download import save_upload
 from ..schemas import LyricsUpdate, TrackCreate, TrackOut, TrackUpdate
 
 router = APIRouter(prefix="/api/tracks", tags=["tracks"])
+
+_ALLOWED_UPLOAD_EXT = {
+    ".mp3", ".m4a", ".wav", ".flac", ".ogg", ".aac", ".webm", ".opus",
+}
 
 
 def _own_track(db: Session, track_id: int, user: User) -> Track:
@@ -30,6 +35,48 @@ def create_track(
         youtube_url=body.youtube_url,
         status="queued",
         language=settings.WHISPER_LANGUAGE,
+    )
+    db.add(track)
+    db.commit()
+    db.refresh(track)
+    return track
+
+
+@router.post("/upload", response_model=TrackOut, status_code=201)
+def upload_track(
+    file: UploadFile = File(...),
+    title: str = Form(""),
+    artist: str = Form(""),
+    remove_vocals: bool = Form(False),
+    lyrics: bool = Form(True),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in _ALLOWED_UPLOAD_EXT:
+        raise HTTPException(
+            status_code=400,
+            detail="format audio neacceptat (mp3, m4a, wav, flac, ogg, aac)",
+        )
+
+    wav_path, duration = save_upload(file, settings.MEDIA_DIR)
+    title = title.strip() or os.path.splitext(file.filename or "")[0] or "Piesă încărcată"
+
+    track = Track(
+        user_id=user.id,
+        title=title,
+        artist=artist.strip(),
+        youtube_url="",
+        youtube_id="",
+        source="upload",
+        needs_separation=remove_vocals,
+        status="queued",
+        language=settings.WHISPER_LANGUAGE,
+        original_path=wav_path,
+        instrumental_path=None if remove_vocals else wav_path,
+        vocals_path=None,
+        duration=duration,
+        lyrics_status="pending" if lyrics else "ready",
     )
     db.add(track)
     db.commit()
