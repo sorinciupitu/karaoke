@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from "react";
-import { Link2, Sparkles } from "lucide-react";
+import { ClipboardPaste, Link2, Sparkles } from "lucide-react";
 
 interface Props {
   onSubmit: (url: string) => Promise<void>;
@@ -9,6 +9,15 @@ export default function AddTrackForm({ onSubmit }: Props) {
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  const paste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) setUrl(text.trim());
+    } catch {
+      // clipboard unavailable
+    }
+  };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -36,6 +45,14 @@ export default function AddTrackForm({ onSubmit }: Props) {
           placeholder="Lipește link-ul YouTube aici…"
           className="w-full bg-transparent py-3 text-cream outline-none placeholder:text-dim"
         />
+        <button
+          type="button"
+          onClick={paste}
+          className="flex shrink-0 items-center gap-1 rounded-full bg-surface-2 px-3 py-1 text-xs font-semibold text-cream transition-all hover:text-spotlight active:scale-95"
+        >
+          <ClipboardPaste size={13} />
+          Lipește
+        </button>
       </div>
       <button
         type="submit"
