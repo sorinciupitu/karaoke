@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 from .auth import seed_admin
 from .db import Base, engine as default_engine
+from .migrations import run_migrations
 from .routers import auth as auth_router
 from .routers import media as media_router
 from .routers import playlists as playlists_router
@@ -21,6 +22,7 @@ def create_app(engine=None):
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         Base.metadata.create_all(bind=eng)
+        run_migrations(eng)
         seed_admin(SessionLocal)
         yield
 
