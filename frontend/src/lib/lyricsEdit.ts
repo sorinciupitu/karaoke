@@ -1,5 +1,13 @@
 import type { Line } from "../api/tracks";
 
+export function parseLyricsText(text: string): Line[] {
+  return text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((t) => ({ text: t, start: 0, end: 0 }));
+}
+
 export function applyLineEdit(
   lines: Line[],
   index: number,

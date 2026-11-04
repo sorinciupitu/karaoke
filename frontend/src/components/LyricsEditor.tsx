@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronUp, Plus, RefreshCw, Save, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Plus,
+  RefreshCw,
+  Save,
+  Trash2,
+} from "lucide-react";
 import type { Line, Track } from "../api/tracks";
-import { updateLyrics, updateTrack } from "../api/tracks";
-import { applyLineEdit, nudgeLine, removeLine } from "../lib/lyricsEdit";
+import { resyncLyrics, updateLyrics, updateTrack } from "../api/tracks";
+import { applyLineEdit, nudgeLine, parseLyricsText, removeLine } from "../lib/lyricsEdit";
 
 interface Props {
   track: Track;
@@ -16,6 +24,7 @@ export default function LyricsEditor({ track, onSaved, onAction }: Props) {
   const [artist, setArtist] = useState(track.artist);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [importText, setImportText] = useState("");
 
   useEffect(() => {
     setLines(track.lyrics ?? []);
@@ -38,6 +47,28 @@ export default function LyricsEditor({ track, onSaved, onAction }: Props) {
     }
   };
 
+  const onFile = (file: File | undefined | null) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setImportText(String(reader.result ?? ""));
+    reader.readAsText(file);
+  };
+
+  const doImport = async () => {
+    const parsed = parseLyricsText(importText);
+    if (!parsed.length) return;
+    setBusy(true);
+    try {
+      await updateLyrics(track.id, parsed);
+      const t = await resyncLyrics(track.id);
+      setLines(parsed);
+      setImportText("");
+      onSaved(t);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const addLine = () => {
     const last = lines[lines.length - 1];
     const start = last ? last.end : 0;
@@ -46,6 +77,43 @@ export default function LyricsEditor({ track, onSaved, onAction }: Props) {
 
   return (
     <div className="space-y-4">
+      <div className="rounded-xl border border-white/10 p-3">
+        <p className="flex items-center gap-1.5 text-sm font-medium text-cream">
+          <FileText size={15} className="text-muted" />
+          Importă versuri
+        </p>
+        <p className="mt-0.5 text-xs text-muted">
+          Lipește textul sau alege un fișier .txt. După import, versurile se
+          re-sincronizează automat cu piesa.
+        </p>
+        <textarea
+          value={importText}
+          onChange={(e) => setImportText(e.target.value)}
+          placeholder="Lipește versurile aici (câte un vers pe linie)…"
+          className="mt-2 h-28 w-full rounded-lg border border-white/10 bg-surface-2 px-3 py-2 text-sm text-cream outline-none placeholder:text-dim focus:border-spotlight/60"
+        />
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <label className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-sm text-muted transition-colors hover:text-cream">
+            <FileText size={14} />
+            Alege .txt
+            <input
+              type="file"
+              accept=".txt,text/plain"
+              className="hidden"
+              onChange={(e) => onFile(e.target.files?.[0])}
+            />
+          </label>
+          <button
+            onClick={doImport}
+            disabled={busy || !importText.trim()}
+            className="flex items-center gap-1.5 rounded-lg bg-spotlight px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-rose disabled:opacity-50"
+          >
+            <RefreshCw size={14} />
+            Importă și re-sincronizează
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
           <span className="text-xs text-muted">Titlu</span>

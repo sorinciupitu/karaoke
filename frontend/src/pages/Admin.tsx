@@ -1,6 +1,33 @@
 import { useCallback, useEffect, useState } from "react";
 import { Plus, Shield, Trash2 } from "lucide-react";
 import { createUser, deleteUser, listUsers, type User } from "../api/users";
+import { usePlayer } from "../player/PlayerContext";
+
+function CrossfadeSetting() {
+  const { crossfadeSeconds, setCrossfadeSeconds } = usePlayer();
+  return (
+    <div className="rounded-xl border border-white/5 bg-surface p-4">
+      <p className="text-sm font-medium text-cream">Durată crossfade</p>
+      <p className="text-xs text-muted">
+        Cât durează tranziția dintre două piese (0–10 secunde)
+      </p>
+      <div className="mt-3 flex items-center gap-3">
+        <input
+          type="range"
+          min={0}
+          max={10}
+          step={0.5}
+          value={crossfadeSeconds}
+          onChange={(e) => setCrossfadeSeconds(Number(e.target.value))}
+          className="h-1.5 flex-1 cursor-pointer accent-spotlight"
+        />
+        <span className="w-14 text-right text-sm font-bold tabular-nums text-cream">
+          {crossfadeSeconds.toFixed(1)}s
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default function Admin() {
   const [users, setUsers] = useState<User[]>([]);
@@ -37,8 +64,12 @@ export default function Admin() {
 
   return (
     <div>
+      <h2 className="font-display text-xl font-semibold text-cream">Setări</h2>
+      <div className="mt-4">
+        <CrossfadeSetting />
+      </div>
 
-      <h2 className="font-display text-xl font-semibold text-cream">Conturi</h2>
+      <h2 className="mt-8 font-display text-xl font-semibold text-cream">Conturi</h2>
 
       <div className="mt-4 space-y-2">
         {users.map((u) => (
