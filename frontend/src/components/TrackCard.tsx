@@ -1,54 +1,71 @@
-import { Mic, Play, Trash2 } from "lucide-react";
+import { Check, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Track } from "../api/tracks";
 import { statusLabel } from "../lib/library";
 
 interface Props {
   track: Track;
-  onDelete: (id: number) => void;
   onPlay: (t: Track) => void;
+  selectionMode?: boolean;
+  selected?: boolean;
 }
 
-export default function TrackCard({ track, onDelete, onPlay }: Props) {
+export default function TrackCard({
+  track,
+  onPlay,
+  selectionMode,
+  selected,
+}: Props) {
   const ready = track.status === "ready";
+  const title = track.title || track.youtube_url;
 
-  return (
-    <div className="group flex items-center justify-between rounded-2xl bg-surface p-2 transition-colors hover:bg-surface-2">
-      <Link
-        to={`/track/${track.id}`}
-        className="flex min-w-0 flex-1 items-center gap-3"
-      >
-        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-surface-3 text-spotlight">
-          <Mic size={20} />
-        </div>
+  if (selectionMode) {
+    return (
+      <div className="flex items-center gap-3 rounded-2xl bg-surface p-2">
+        <span
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+            selected
+              ? "border-spotlight bg-spotlight text-white"
+              : "border-surface-3 text-transparent"
+          }`}
+        >
+          <Check size={16} />
+        </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold text-cream transition-colors group-hover:text-spotlight">
-            {track.title || track.youtube_url}
+          <p className="line-clamp-2 text-sm font-bold leading-snug text-cream">
+            {title}
           </p>
-          <p className="truncate text-xs text-muted">
+          <p className="mt-0.5 truncate text-xs text-muted">
             {statusLabel(track.status, track.lyrics_status)}
           </p>
         </div>
-      </Link>
-
-      <div className="flex shrink-0 items-center gap-1">
-        {ready && (
-          <button
-            onClick={() => onPlay(track)}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-spotlight/20 text-spotlight transition-colors hover:bg-spotlight hover:text-white"
-            aria-label="Redă"
-          >
-            <Play size={16} />
-          </button>
-        )}
-        <button
-          onClick={() => onDelete(track.id)}
-          className="flex h-8 w-8 items-center justify-center rounded-full text-dim transition-colors hover:text-red-400"
-          aria-label="Șterge piesa"
-        >
-          <Trash2 size={15} />
-        </button>
       </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 rounded-2xl bg-surface p-2 transition-colors hover:bg-surface-2">
+      <button
+        onClick={() => ready && onPlay(track)}
+        disabled={!ready}
+        aria-label="Redă"
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-colors ${
+          ready
+            ? "bg-spotlight/20 text-spotlight hover:bg-spotlight hover:text-white"
+            : "bg-surface-3 text-dim"
+        }`}
+      >
+        <Play size={20} />
+      </button>
+
+      <Link to={`/track/${track.id}`} className="min-w-0 flex-1">
+        <p className="line-clamp-2 text-sm font-bold leading-snug text-cream transition-colors hover:text-spotlight">
+          {title}
+        </p>
+        <p className="mt-0.5 truncate text-xs text-muted">
+          {statusLabel(track.status, track.lyrics_status)}
+        </p>
+      </Link>
     </div>
   );
 }

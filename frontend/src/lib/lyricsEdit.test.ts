@@ -46,4 +46,23 @@ describe("parseLyricsText", () => {
     expect(parseLyricsText("")).toEqual([]);
     expect(parseLyricsText("   \n  \n")).toEqual([]);
   });
+
+  it("keeps existing timings when the line count matches", () => {
+    const existing: Line[] = [
+      { text: "vechi 1", start: 0, end: 2 },
+      { text: "vechi 2", start: 2, end: 4 },
+    ];
+    expect(parseLyricsText("corectat 1\ncorectat 2", existing)).toEqual([
+      { text: "corectat 1", start: 0, end: 2 },
+      { text: "corectat 2", start: 2, end: 4 },
+    ]);
+  });
+
+  it("starts from zero when the line count differs", () => {
+    const existing: Line[] = [{ text: "vechi 1", start: 0, end: 2 }];
+    expect(parseLyricsText("a\nb", existing)).toEqual([
+      { text: "a", start: 0, end: 0 },
+      { text: "b", start: 0, end: 0 },
+    ]);
+  });
 });

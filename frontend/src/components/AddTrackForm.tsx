@@ -11,11 +11,18 @@ export default function AddTrackForm({ onSubmit }: Props) {
   const [error, setError] = useState("");
 
   const paste = async () => {
+    setError("");
     try {
-      const text = await navigator.clipboard.readText();
-      if (text) setUrl(text.trim());
+      if (navigator.clipboard?.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          setUrl(text.trim());
+          return;
+        }
+      }
+      setError("Clipboard-ul nu e accesibil aici. Lipește cu Cmd+V direct în câmp.");
     } catch {
-      // clipboard unavailable
+      setError("Clipboard-ul nu e accesibil aici. Lipește cu Cmd+V direct în câmp.");
     }
   };
 

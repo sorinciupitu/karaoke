@@ -1,11 +1,16 @@
 import type { Line } from "../api/tracks";
 
-export function parseLyricsText(text: string): Line[] {
-  return text
+export function parseLyricsText(text: string, existing: Line[] = []): Line[] {
+  const texts = text
     .split(/\r?\n/)
     .map((l) => l.trim())
-    .filter(Boolean)
-    .map((t) => ({ text: t, start: 0, end: 0 }));
+    .filter(Boolean);
+  const preserve = texts.length === existing.length && existing.length > 0;
+  return texts.map((t, i) => ({
+    text: t,
+    start: preserve ? existing[i].start : 0,
+    end: preserve ? existing[i].end : 0,
+  }));
 }
 
 export function applyLineEdit(

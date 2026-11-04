@@ -55,12 +55,20 @@ export default function LyricsEditor({ track, onSaved, onAction }: Props) {
   };
 
   const doImport = async () => {
-    const parsed = parseLyricsText(importText);
-    if (!parsed.length) return;
+    const old = track.lyrics ?? [];
+    const texts = importText
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (!texts.length) return;
+    // If the corrected text has the same number of lines, keep the already
+    // detected timings (no need to re-run the alignment).
+    const preserve = texts.length === old.length && old.length > 0;
+    const parsed = parseLyricsText(importText, old);
     setBusy(true);
     try {
-      await updateLyrics(track.id, parsed);
-      const t = await resyncLyrics(track.id);
+      let t = await updateLyrics(track.id, parsed);
+      if (!preserve) t = await resyncLyrics(track.id);
       setLines(parsed);
       setImportText("");
       onSaved(t);
