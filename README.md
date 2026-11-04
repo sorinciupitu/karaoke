@@ -16,14 +16,29 @@ curl -fsSL https://raw.githubusercontent.com/sorinciupitu/karaoke/main/install.s
 Ce face scriptul:
 - instalează Docker (pe Linux; pe macOS te îndrumă spre Docker Desktop sau Colima dacă lipsește);
 - generează `.env` cu un `SECRET_KEY` aleator;
+- **alege varianta de sistem** (CPU sau NVIDIA GPU);
 - pornește totul cu `docker compose up -d --build`.
 
 Aplicația va fi disponibilă pe **http://localhost:7777** (portul e configurabil
 în `.env`, cheia `PORT`).
 
-> **Atenție:** la prima pornire se descarcă modelele AI (~3 GB: Demucs pentru
-> separarea vocii + Whisper pentru transcriere). Următoarele porniri sunt rapide
-> (modelele sunt păstrate într-un volum Docker).
+### Varianta de sistem (CPU / GPU)
+
+Scriptul detectează singur dacă ai un GPU NVIDIA și descarcă doar ce e necesar.
+Poți forța varianta cu un argument:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sorinciupitu/karaoke/main/install.sh | bash -s -- --gpu
+# sau, fără GPU:
+curl -fsSL https://raw.githubusercontent.com/sorinciupitu/karaoke/main/install.sh | bash -s -- --cpu
+```
+
+- **CPU** — imagine mai mică, rulează oriunde (inclusiv Apple Silicon). Transcrierea `large-v3` e lentă (~20-40 min/piesă), dar piesa e redabilă imediat.
+- **GPU (NVIDIA)** — folosește CUDA (Demucs + Whisper pe placă, mult mai rapid). Necesită driverul NVIDIA și [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) pe server.
+
+> **Atenție:** la prima pornire se descarcă modelele AI (Demucs `htdemucs_ft` +
+> Whisper `large-v3`, câteva GB). Următoarele porniri sunt rapide (modelele sunt
+> păstrate într-un volum Docker).
 
 ## Conturi
 
@@ -36,10 +51,12 @@ Fiecare cont are **biblioteca și playlisturile lui proprii**, complet izolate.
 ## Cum funcționează
 
 1. **Bibliotecă** → lipești un link YouTube.
-2. Aplicația descarcă audio-ul, separă vocea (Demucs), caută versurile
-   originale (LRCLIB) și, dacă nu le găsește, le transcrie cu AI (Whisper,
-   română implicit).
-3. Deschizi piesa → o redai cu versurile sincronizate.
+2. Aplicația descarcă audio-ul și separă vocea (Demucs `htdemucs_ft`). Piesa
+   devine **redabilă imediat**, chiar înainte de versuri.
+3. În fundal caută versurile originale (LRCLIB); dacă nu le găsește, le
+   transcrie cu AI (Whisper `large-v3`, doar pe voce) și, opțional, le
+   corectează ortografia/diacriticele printr-un LLM local (Ollama). Versurile
+   **apar singure** când sunt gata.
 4. **Editează versurile** → corectezi textul, adaugi/ștergi versuri, ajustezi
    momentele; „Re-sincronizează" realiniază textul cu vocea.
 5. **Playlisturi** → ordonezi piesele prin drag-and-drop; butonul **Crossfade**
@@ -52,8 +69,26 @@ Fiecare cont are **biblioteca și playlisturile lui proprii**, complet izolate.
 | `PORT` | `7777` | Portul pe care e expusă aplicația |
 | `ADMIN_USERNAME` | `admin` | Utilizatorul de administrator |
 | `ADMIN_PASSWORD` | `admin` | Parola de administrator |
-| `WHISPER_MODEL` | `medium` | Modelul Whisper (`small` / `medium` / `large-v3`) |
+| `WHISPER_MODEL` | `large-v3` | Modelul Whisper (`small` / `medium` / `large-v3`) |
 | `WHISPER_LANGUAGE` | `ro` | Limba implicită a transcrierii |
+| `DEVICE` | `auto` | Dispozitiv de calcul: `auto` / `cuda` / `cpu` |
+| `WHISPER_COMPUTE_TYPE` | `auto` | Precizia Whisper: `auto` / `float16` / `int8_float16` / `int8` |
+| `DEMUCS_MODEL` | `htdemucs_ft` | Modelul de separare a vocii (`htdemucs` / `htdemucs_ft`) |
+| `OLLAMA_ENABLED` | `true` | Corectează versurile printr-un LLM local (Ollama) |
+| `OLLAMA_URL` | `http://host.docker.internal:11434` | Adresa Ollama |
+| `OLLAMA_MODEL` | `qwen2.5:7b` | Modelul Ollama folosit la corectare |
+| `TORCH` | `cpu` | Varianta PyTorch: `cpu` / `cuda` (setată automat de install.sh) |
+
+### Corectarea versurilor cu Ollama (opțional)
+
+Dacă pe mașină rulează [Ollama](https://ollama.com), aplicația trece automat
+versurile transcrise printr-un LLM local care corectează ortografia și
+diacriticele (fără să adauge cuvinte). Dacă Ollama nu e instalat, se sare peste
+— versurile rămân cum le-a scris Whisper.
+
+```bash
+ollama pull qwen2.5:7b   # sau alt model, apoi setează OLLAMA_MODEL în .env
+```
 
 ## Expunere publică (port forwarding)
 

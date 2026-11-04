@@ -1,3 +1,4 @@
+from .device import pick_device, pick_whisper_compute_type
 from .lyrics import Line, Word, parse_lrc
 
 
@@ -30,7 +31,9 @@ def transcribe(
 ) -> list[Word]:
     from faster_whisper import WhisperModel
 
-    m = WhisperModel(model, device="cpu", compute_type="int8", download_root=models_dir)
+    device = pick_device()
+    compute_type = pick_whisper_compute_type(device)
+    m = WhisperModel(model, device=device, compute_type=compute_type, download_root=models_dir)
     segments, _info = m.transcribe(
         vocals_path,
         language=language,

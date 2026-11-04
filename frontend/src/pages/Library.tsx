@@ -10,7 +10,7 @@ function stageLabel(t: Track): string {
   if (t.status === "downloading") return "Descărcare audio";
   if (t.status === "separating") return "Extragere Voce cu AI (Demucs)";
   if (t.status === "encoding") return "Encodare audio";
-  if (t.lyrics_status === "syncing") return "Transcriere AI & Sincronizare (Whisper)";
+  if (t.status === "ready") return "Transcriere AI & Sincronizare (Whisper)";
   return "Procesare";
 }
 
@@ -52,9 +52,13 @@ export default function Library() {
     playQueue(ready, Math.max(0, idx));
   };
 
-  const activeProcessing = tracks.find(
-    (t) => t.status !== "ready" && t.status !== "failed",
-  );
+  const activeProcessing = tracks.find((t) => {
+    if (t.status !== "ready" && t.status !== "failed") return true;
+    return (
+      t.status === "ready" &&
+      (t.lyrics_status === "syncing" || t.lyrics_status === "pending")
+    );
+  });
 
   return (
     <div>

@@ -17,6 +17,13 @@ describe("statusLabel", () => {
   it("maps ready", () => {
     expect(statusLabel("ready", "ready")).toBe("gata");
   });
+  it("maps ready with lyrics still syncing", () => {
+    expect(statusLabel("ready", "syncing")).toBe("gata · se transcriu versurile");
+    expect(statusLabel("ready", "pending")).toBe("gata · se transcriu versurile");
+  });
+  it("maps ready without lyrics", () => {
+    expect(statusLabel("ready", "failed")).toBe("gata · fără versuri");
+  });
   it("maps failed", () => {
     expect(statusLabel("failed", "failed")).toBe("eroare");
   });

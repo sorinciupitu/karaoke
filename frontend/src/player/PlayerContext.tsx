@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { getSettings, patchSettings } from "../api/settings";
-import type { Track } from "../api/tracks";
+import { getTrack, type Track } from "../api/tracks";
 import { PlayerEngine } from "../audio/player";
 
 const engine = new PlayerEngine();
@@ -59,10 +59,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // screen wake lock while playing (so the display doesn't sleep mid-song)
   useEffect(() => {
     if (!playing) return;
-    let lock: { release: () => Promise<void> } | null = null;
+    let lock: {
+      release: () => Promise<void>;
+      addEventListener: (type: string, listener: () => void) => void;
+    } | null = null;
     let cancelled = false;
     const nav = navigator as Navigator & {
-      wakeLock?: { request: (t: "screen") => Promise<{ release: () => Promise<void> }> };
+      wakeLock?: {
+        request: (t: "screen") => Promise<{
+          release: () => Promise<void>;
+          addEventListener: (type: string, listener: () => void) => void;
+        }>;
+      };
     };
 
     const acquire = async () => {
@@ -99,6 +107,38 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => {});
   }, []);
+
+  // Keep the playing track's lyrics fresh: while they're still being
+  // transcribed/synced, poll and update in place so they appear automatically.
+  useEffect(() => {
+    if (!current) return;
+    if (current.lyrics_status === "ready" || current.lyrics_status === "failed")
+      return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const t = await getTrack(current.id);
+        if (cancelled) return;
+        setQueue((q) =>
+          q.map((x, i) =>
+            i === index &&
+            (x.lyrics_status !== t.lyrics_status ||
+              JSON.stringify(x.lyrics) !== JSON.stringify(t.lyrics))
+              ? { ...x, lyrics: t.lyrics, lyrics_status: t.lyrics_status }
+              : x,
+          ),
+        );
+      } catch {
+        // not authenticated yet — ignore
+      }
+    };
+    void poll();
+    const id = setInterval(poll, 3000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [current?.id, current?.lyrics_status, index]);
 
   const playTrack = useCallback((t: Track) => {
     setQueue([t]);

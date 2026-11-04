@@ -1,7 +1,10 @@
 export function statusLabel(status: string, lyrics_status: string): string {
   if (status === "failed") return "eroare";
   if (status === "ready") {
-    return lyrics_status === "failed" ? "gata · fără versuri" : "gata";
+    if (lyrics_status === "syncing" || lyrics_status === "pending")
+      return "gata · se transcriu versurile";
+    if (lyrics_status === "failed") return "gata · fără versuri";
+    return "gata";
   }
   if (status === "queued") return "în așteptare";
   if (status === "downloading") return "se descarcă";

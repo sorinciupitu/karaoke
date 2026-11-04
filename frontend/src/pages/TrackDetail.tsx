@@ -94,12 +94,19 @@ export default function TrackDetail() {
         </div>
       )}
 
-      {ready && track.lyrics.length === 0 && (
-        <p className="py-8 text-center text-muted">
-          Versurile nu sunt încă disponibile. Deschide editorul și apasă
-          „Reîncearcă transcrierea”.
-        </p>
-      )}
+      {ready &&
+        track.lyrics.length === 0 &&
+        (track.lyrics_status === "syncing" || track.lyrics_status === "pending" ? (
+          <div className="flex items-center justify-center gap-2 py-8 text-muted">
+            <Loader2 size={18} className="animate-spin" />
+            Versurile se transcriu… vor apărea singure când sunt gata.
+          </div>
+        ) : (
+          <p className="py-8 text-center text-muted">
+            Versurile nu sunt încă disponibile. Deschide editorul și apasă
+            „Reîncearcă transcrierea”.
+          </p>
+        ))}
 
       <div className="mt-8 border-t border-white/10 pt-4">
         <button

@@ -5,6 +5,7 @@ from .download import download
 from .encode import encode_to_m4a
 from .key_detect import detect_key
 from .lyrics import group_words
+from .ollama import correct_lines
 from .separate import separate
 from .transcribe import fetch_lrclib, transcribe
 
@@ -25,7 +26,8 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
                     settings.WHISPER_MODEL,
                     settings.MODELS_DIR,
                 )
-                track.lyrics = _lines_to_json(group_words(words))
+                lines = correct_lines(group_words(words))
+                track.lyrics = _lines_to_json(lines)
                 track.lyrics_source = "whisper"
         elif mode == "resync":
             if not track.vocals_path:
@@ -62,7 +64,8 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
                     settings.WHISPER_MODEL,
                     settings.MODELS_DIR,
                 )
-                track.lyrics = _lines_to_json(group_words(words))
+                lines = correct_lines(group_words(words))
+                track.lyrics = _lines_to_json(lines)
                 track.lyrics_source = "whisper"
             else:
                 track.lyrics = []
@@ -143,13 +146,9 @@ def run_track(track_id: int, session_factory=None) -> None:
             except Exception:
                 pass
 
-        # 3. lyrics (independent: failure does not fail the track)
-        if track.lyrics_status == "pending":
-            track.lyrics_status = "syncing"
-            db.commit()
-            _apply_lyrics(track, db, "auto")
-
-        # 4. encode (atomic; bounded retries before marking failed)
+        # 3. encode (atomic; bounded retries before marking failed).
+        #    Lyrics are handled separately (see run_lyrics) so the track becomes
+        #    playable immediately, while transcription continues in the background.
         if track.status != "ready":
             track.status = "encoding"
             db.commit()

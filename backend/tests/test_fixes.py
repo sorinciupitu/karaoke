@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from app.auth import hash_password
 from app.config import settings
 from app.db import Base, get_db
-from app.jobs.worker import next_pending_track
+from app.jobs.worker import next_lyrics_track
 from app.main import create_app
 from app.models import Playlist, PlaylistTrack, Track, User
 from app.pipeline.download import DownloadResult
@@ -223,7 +223,7 @@ def test_resync_preserves_edited_text(session_factory, monkeypatch):
 # --- Fix: worker picks ready track with pending lyrics ---
 
 
-def test_next_pending_picks_ready_lyrics_track(session_factory):
+def test_next_lyrics_picks_ready_lyrics_track(session_factory):
     Session = session_factory
     db = Session()
     u = User(username="u", password_hash="x")
@@ -235,5 +235,5 @@ def test_next_pending_picks_ready_lyrics_track(session_factory):
     tid = t.id
     db.close()
 
-    pending = next_pending_track(session_factory=Session)
+    pending = next_lyrics_track(session_factory=Session)
     assert pending is not None and pending.id == tid

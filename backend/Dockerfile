@@ -7,9 +7,17 @@ RUN apt-get update \
 
 WORKDIR /app
 
-# CPU-only PyTorch, pinned. torch 2.4.1 gates its CUDA deps to x86_64, so on
-# arm64 (Apple Silicon) it stays CPU-only and skips the ~3 GB CUDA toolkit.
-RUN pip install --no-cache-dir torch==2.4.1 torchaudio==2.4.1
+# PyTorch, pinned. The build arg TORCH selects the wheel flavour:
+#   cpu  -> CPU-only wheels (small, works everywhere; no CUDA deps)
+#   cuda -> CUDA 12.1 wheels (NVIDIA GPU support, requires nvidia runtime)
+ARG TORCH=cpu
+RUN if [ "$TORCH" = "cuda" ]; then \
+      pip install --no-cache-dir torch==2.4.1 torchaudio==2.4.1 \
+        --index-url https://download.pytorch.org/whl/cu121; \
+    else \
+      pip install --no-cache-dir torch==2.4.1 torchaudio==2.4.1 \
+        --index-url https://download.pytorch.org/whl/cpu; \
+    fi
 
 # Heavy dependencies in their own cacheable layer, BEFORE the app code.
 #

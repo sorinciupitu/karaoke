@@ -2,9 +2,15 @@
 set -euo pipefail
 
 DRY_RUN=false
-if [ "${1:-}" = "--dry-run" ]; then
-  DRY_RUN=true
-fi
+VARIANT=""  # cpu | cuda
+
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --gpu) VARIANT=cuda ;;
+    --cpu) VARIANT=cpu ;;
+  esac
+done
 
 PORT="${PORT:-7777}"
 REPO_TARBALL="https://github.com/sorinciupitu/karaoke/archive/refs/heads/main.tar.gz"
@@ -15,8 +21,9 @@ plan() {
   echo "  1. Descarc cea mai recentă versiune în ${INSTALL_DIR} (păstrez .env)"
   echo "  2. Verific / instalez Docker (dacă lipsește)"
   echo "  3. Generez .env cu un SECRET_KEY aleator (dacă lipsește)"
-  echo "  4. Rulez: docker compose up -d --build"
-  echo "  5. Aplicația va fi disponibilă pe portul ${PORT}"
+  echo "  4. Aleg varianta de sistem: CPU sau NVIDIA GPU (CUDA)"
+  echo "  5. Rulez: docker compose up -d --build"
+  echo "  6. Aplicația va fi disponibilă pe portul ${PORT}"
 }
 
 if [ "$DRY_RUN" = true ]; then
@@ -64,7 +71,62 @@ if [ ! -f .env ]; then
   echo "Editează ${INSTALL_DIR}/.env pentru a schimba ADMIN_USERNAME / ADMIN_PASSWORD înainte de prima pornire."
 fi
 
-# 4. Run
+# 4. Varianta de sistem (CPU / NVIDIA GPU)
+if [ -z "$VARIANT" ]; then
+  if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi >/dev/null 2>&1; then
+    DETECTED="cuda"
+  else
+    DETECTED="cpu"
+  fi
+
+  if [ -t 0 ]; then
+    echo ""
+    echo "Ce tip de sistem ai?"
+    echo "  1) Doar CPU (implicit)"
+    echo "  2) NVIDIA GPU (RTX etc.) — folosește CUDA"
+    printf "Alege (1/2) [Enter = %s]: " "$DETECTED"
+    read -r CHOICE
+    case "${CHOICE:-$DETECTED}" in
+      2|cuda|gpu|nvidia) VARIANT=cuda ;;
+      *) VARIANT=cpu ;;
+    esac
+  else
+    VARIANT="$DETECTED"
+    echo "Am detectat automat varianta: ${VARIANT} (folosește --gpu sau --cpu pentru a o forța)."
+  fi
+fi
+
+set_variant() {
+  local val="$1"
+  if grep -q "^TORCH=" .env 2>/dev/null; then
+    sed -i.bak "s|^TORCH=.*|TORCH=${val}|" .env
+    rm -f .env.bak
+  else
+    echo "TORCH=${val}" >> .env
+  fi
+}
+
+if [ "$VARIANT" = "cuda" ]; then
+  set_variant cuda
+  cat > docker-compose.override.yml <<'EOF'
+services:
+  app:
+    gpus: all
+EOF
+  echo "Varianta: NVIDIA GPU (CUDA)."
+  if ! docker info 2>/dev/null | grep -qi "nvidia"; then
+    echo "⚠️  Nu am detectat nvidia-container-toolkit în Docker." >&2
+    echo "    Dacă GPU-ul nu apare în aplicație, instalează-l:" >&2
+    echo "    https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html" >&2
+    echo "    apoi: sudo nvidia-ctk runtime configure --runtime=docker && sudo systemctl restart docker" >&2
+  fi
+else
+  set_variant cpu
+  rm -f docker-compose.override.yml
+  echo "Varianta: CPU (fără GPU)."
+fi
+
+# 5. Run
 docker compose up -d --build
 
 echo ""
