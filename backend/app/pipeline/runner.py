@@ -1,6 +1,6 @@
 from ..config import settings
 from ..db import SessionLocal
-from ..models import Track
+from ..models import Track, UserSettings
 from .download import download
 from .encode import encode_to_m4a
 from .key_detect import detect_key
@@ -12,6 +12,16 @@ from .transcribe import fetch_lrclib, transcribe
 
 def _lines_to_json(lines) -> list[dict]:
     return [{"text": l.text, "start": l.start, "end": l.end} for l in lines]
+
+
+def _separation_model(track: Track, db) -> str:
+    """Per-track override, else the user's setting, else the global default."""
+    if track.demucs_model:
+        return track.demucs_model
+    us = db.get(UserSettings, track.user_id)
+    if us and us.demucs_model:
+        return us.demucs_model
+    return settings.DEMUCS_MODEL
 
 
 def _apply_lyrics(track: Track, db, mode: str) -> None:
@@ -113,6 +123,7 @@ def run_track(track_id: int, session_factory=None) -> None:
                 db.commit()
                 return
             track.original_path = res.original_path
+            track.source_path = res.original_path
             track.title = res.title
             track.artist = res.artist
             track.duration = res.duration
@@ -125,9 +136,11 @@ def run_track(track_id: int, session_factory=None) -> None:
         ):
             track.status = "separating"
             db.commit()
+            src = track.source_path or track.original_path
+            model = _separation_model(track, db)
             try:
                 res = separate(
-                    track.original_path, settings.MEDIA_DIR, settings.MODELS_DIR
+                    src, settings.MEDIA_DIR, settings.MODELS_DIR, model_name=model
                 )
             except Exception as e:
                 track.status = "failed"
@@ -136,6 +149,7 @@ def run_track(track_id: int, session_factory=None) -> None:
                 return
             track.instrumental_path = res.instrumental_path
             track.vocals_path = res.vocals_path
+            track.demucs_model = model
             db.commit()
 
         # 2.5 detect the musical key from the instrumental

@@ -16,7 +16,7 @@ services:
       WHISPER_LANGUAGE: ${WHISPER_LANGUAGE:-ro}
       DEVICE: ${DEVICE:-auto}
       WHISPER_COMPUTE_TYPE: ${WHISPER_COMPUTE_TYPE:-auto}
-      DEMUCS_MODEL: ${DEMUCS_MODEL:-htdemucs_ft}
+      DEMUCS_MODEL: ${DEMUCS_MODEL:-htdemucs}
       OLLAMA_ENABLED: ${OLLAMA_ENABLED:-true}
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}

@@ -68,7 +68,7 @@ def test_run_track_marks_ready_but_leaves_lyrics_pending(session_factory, monkey
     )
     monkeypatch.setattr(
         "app.pipeline.runner.separate",
-        lambda o, out, m: SeparateResult("inst.wav", "voc.wav"),
+        lambda o, out, m, model_name=None: SeparateResult("inst.wav", "voc.wav"),
     )
     monkeypatch.setattr("app.pipeline.runner.encode_to_m4a", lambda wav, out: out)
 
@@ -211,3 +211,30 @@ def test_next_lyrics_track_finds_ready_with_pending_lyrics(session_factory):
 
     pending = next_lyrics_track(session_factory=Session)
     assert pending.id == t1_id
+
+
+def test_separation_model_priority(session_factory, monkeypatch):
+    from app.models import UserSettings
+    from app.pipeline.runner import _separation_model
+
+    Session = session_factory
+    db = Session()
+    u = User(username="u", password_hash="x")
+    db.add(u)
+    db.flush()
+    t = Track(user_id=u.id, youtube_url="x")
+    db.add(t)
+    db.commit()
+
+    monkeypatch.setattr("app.config.settings.DEMUCS_MODEL", "htdemucs")
+    assert _separation_model(t, db) == "htdemucs"  # env default
+
+    us = UserSettings(user_id=u.id, demucs_model="mdx_extra_q")
+    db.add(us)
+    db.commit()
+    assert _separation_model(t, db) == "mdx_extra_q"  # user setting wins
+
+    t.demucs_model = "htdemucs_ft"
+    db.commit()
+    assert _separation_model(t, db) == "htdemucs_ft"  # per-track override wins
+    db.close()

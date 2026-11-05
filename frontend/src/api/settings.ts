@@ -4,6 +4,7 @@ export interface Settings {
   crossfade_enabled: boolean;
   crossfade_seconds: number;
   whisper_model: string;
+  demucs_model: string;
 }
 
 export function getSettings(): Promise<Settings> {

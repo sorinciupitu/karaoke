@@ -7,7 +7,7 @@ from app.auth import hash_password
 from app.config import settings
 from app.db import Base, get_db
 from app.main import create_app
-from app.models import User
+from app.models import Track, User
 
 FH = {"X-Requested-With": "fetch"}
 
@@ -139,3 +139,75 @@ def test_cancel_and_retry(env):
 
     r = client.post(f"/api/tracks/{tid}/retry", headers=FH)
     assert r.json()["status"] == "queued"
+
+
+def test_reprocess_sets_model_and_requeues(env, tmp_path):
+    client, Session = env
+    login(client, "a")
+    tid = client.post(
+        "/api/tracks", json={"youtube_url": "https://youtu.be/x"}, headers=FH
+    ).json()["id"]
+
+    src = tmp_path / "src.wav"
+    src.write_bytes(b"RIFF-placeholder")
+
+    db = Session()
+    t = db.get(Track, tid)
+    t.status = "ready"
+    t.needs_separation = True
+    t.instrumental_path = "inst.m4a"
+    t.vocals_path = "voc.m4a"
+    t.original_path = "orig.m4a"
+    t.source_path = str(src)
+    db.commit()
+    db.close()
+
+    r = client.post(
+        f"/api/tracks/{tid}/reprocess",
+        json={"model": "htdemucs_ft"},
+        headers=FH,
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "queued"
+    assert body["demucs_model"] == "htdemucs_ft"
+
+    db = Session()
+    t = db.get(Track, tid)
+    assert t.instrumental_path is None
+    assert t.vocals_path is None
+    assert t.demucs_model == "htdemucs_ft"
+    db.close()
+
+
+def test_reprocess_rejects_unknown_model(env):
+    client, _ = env
+    login(client, "a")
+    tid = client.post(
+        "/api/tracks", json={"youtube_url": "https://youtu.be/x"}, headers=FH
+    ).json()["id"]
+
+    r = client.post(
+        f"/api/tracks/{tid}/reprocess", json={"model": "nope"}, headers=FH
+    )
+    assert r.status_code == 400
+
+
+def test_reprocess_rejects_track_without_separation(env):
+    client, Session = env
+    login(client, "a")
+    tid = client.post(
+        "/api/tracks", json={"youtube_url": "https://youtu.be/x"}, headers=FH
+    ).json()["id"]
+
+    db = Session()
+    t = db.get(Track, tid)
+    t.status = "ready"
+    t.needs_separation = False
+    db.commit()
+    db.close()
+
+    r = client.post(
+        f"/api/tracks/{tid}/reprocess", json={"model": "htdemucs"}, headers=FH
+    )
+    assert r.status_code == 400

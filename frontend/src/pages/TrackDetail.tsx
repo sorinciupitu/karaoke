@@ -1,17 +1,86 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, Pencil, Play } from "lucide-react";
+import { ArrowLeft, Loader2, Pencil, Play, RefreshCw } from "lucide-react";
 import {
   getTrack,
   refetchLyrics,
+  reprocessTrack,
   resyncLyrics,
   retryLyrics,
   type Track,
 } from "../api/tracks";
 import LyricsEditor from "../components/LyricsEditor";
 import LyricsView from "../components/LyricsView";
+import { DEMUCS_MODELS } from "../lib/demucs";
 import { statusLabel } from "../lib/library";
 import { usePlayer } from "../player/PlayerContext";
+
+function ReprocessSection({
+  track,
+  onDone,
+}: {
+  track: Track;
+  onDone: () => void;
+}) {
+  const [model, setModel] = useState(track.demucs_model || "htdemucs");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const reprocess = async () => {
+    if (
+      !window.confirm(
+        "Re-procesez instrumentalul cu modelul selectat? Durează câteva minute, iar piesa nu e redabilă între timp.",
+      )
+    )
+      return;
+    setBusy(true);
+    setMsg("");
+    try {
+      await reprocessTrack(track.id, model);
+      setMsg("Procesare pornită. Când e gata, piesa revine ca redabilă.");
+      onDone();
+    } catch (e) {
+      setMsg("A eșuat: " + (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-8 rounded-xl border border-white/5 bg-surface p-4">
+      <p className="text-sm font-medium text-cream">Re-procesează instrumentalul</p>
+      <p className="text-xs text-muted">
+        Dacă sunetul nu e bun, refă separarea vocii cu alt model Demucs.
+      </p>
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+        <select
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+          className="min-w-0 flex-1 rounded-lg border border-white/10 bg-surface-2 px-3 py-2 text-sm text-cream outline-none focus:border-spotlight/60"
+        >
+          {DEMUCS_MODELS.map((m) => (
+            <option key={m.value} value={m.value}>
+              {m.label}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={reprocess}
+          disabled={busy}
+          className="flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-spotlight px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rose disabled:opacity-50"
+        >
+          {busy ? (
+            <Loader2 size={15} className="animate-spin" />
+          ) : (
+            <RefreshCw size={15} />
+          )}
+          Reprocesează
+        </button>
+      </div>
+      {msg && <p className="mt-2 text-sm text-muted">{msg}</p>}
+    </div>
+  );
+}
 
 export default function TrackDetail() {
   const { id } = useParams();
@@ -127,6 +196,10 @@ export default function TrackDetail() {
           </div>
         )}
       </div>
+
+      {track.needs_separation && ready && (
+        <ReprocessSection track={track} onDone={refresh} />
+      )}
     </div>
   );
 }

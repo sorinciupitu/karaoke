@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     WHISPER_LANGUAGE: str = "ro"
     DEVICE: str = "auto"  # auto | cuda | cpu
     WHISPER_COMPUTE_TYPE: str = "auto"  # auto | float16 | int8_float16 | int8
-    DEMUCS_MODEL: str = "htdemucs_ft"
+    DEMUCS_MODEL: str = "htdemucs"
     OLLAMA_ENABLED: bool = True
     OLLAMA_URL: str = "http://host.docker.internal:11434"
     OLLAMA_MODEL: str = "qwen2.5:7b"
@@ -23,3 +23,6 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Modele demucs acceptate (expuse în UI pentru alegere per piesă / global).
+DEMUCS_MODELS = ["htdemucs", "htdemucs_ft", "mdx_extra_q"]

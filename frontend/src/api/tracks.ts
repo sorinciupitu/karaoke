@@ -20,6 +20,8 @@ export interface Track {
   lyrics: Line[];
   lyrics_source: string | null;
   musical_key: string | null;
+  demucs_model: string | null;
+  needs_separation: boolean;
   language: string;
   created_at: string;
 }
@@ -87,4 +89,11 @@ export function refetchLyrics(id: number): Promise<Track> {
 
 export function retryLyrics(id: number): Promise<Track> {
   return api<Track>(`/api/tracks/${id}/lyrics/retry`, { method: "POST" });
+}
+
+export function reprocessTrack(id: number, model: string): Promise<Track> {
+  return api<Track>(`/api/tracks/${id}/reprocess`, {
+    method: "POST",
+    body: JSON.stringify({ model }),
+  });
 }

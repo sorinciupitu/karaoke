@@ -36,8 +36,8 @@ curl -fsSL https://raw.githubusercontent.com/sorinciupitu/karaoke/main/install.s
 - **CPU** — imagine mai mică, rulează oriunde (inclusiv Apple Silicon). Transcrierea `large-v3` e lentă (~20-40 min/piesă), dar piesa e redabilă imediat.
 - **GPU (NVIDIA)** — folosește CUDA (Demucs + Whisper pe placă, mult mai rapid). Necesită driverul NVIDIA și [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) pe server.
 
-> **Atenție:** la prima pornire se descarcă modelele AI (Demucs `htdemucs_ft` +
-> Whisper `large-v3`, câteva GB). Următoarele porniri sunt rapide (modelele sunt
+> **Atenție:** la prima pornire se descarcă modelele AI (Demucs + Whisper
+> `large-v3`, câteva GB). Următoarele porniri sunt rapide (modelele sunt
 > păstrate într-un volum Docker).
 
 ## Conturi
@@ -51,7 +51,7 @@ Fiecare cont are **biblioteca și playlisturile lui proprii**, complet izolate.
 ## Cum funcționează
 
 1. **Bibliotecă** → lipești un link YouTube.
-2. Aplicația descarcă audio-ul și separă vocea (Demucs `htdemucs_ft`). Piesa
+2. Aplicația descarcă audio-ul și separă vocea (Demucs). Piesa
    devine **redabilă imediat**, chiar înainte de versuri.
 3. În fundal caută versurile originale (LRCLIB); dacă nu le găsește, le
    transcrie cu AI (Whisper `large-v3`, doar pe voce) și, opțional, le
@@ -73,7 +73,7 @@ Fiecare cont are **biblioteca și playlisturile lui proprii**, complet izolate.
 | `WHISPER_LANGUAGE` | `ro` | Limba implicită a transcrierii |
 | `DEVICE` | `auto` | Dispozitiv de calcul: `auto` / `cuda` / `cpu` |
 | `WHISPER_COMPUTE_TYPE` | `auto` | Precizia Whisper: `auto` / `float16` / `int8_float16` / `int8` |
-| `DEMUCS_MODEL` | `htdemucs_ft` | Modelul de separare a vocii (`htdemucs` / `htdemucs_ft`) |
+| `DEMUCS_MODEL` | `htdemucs` | Modelul implicit de separare a vocii (`htdemucs` / `htdemucs_ft` / `mdx_extra_q`) — schimbabil și din **Setări** |
 | `OLLAMA_ENABLED` | `true` | Corectează versurile printr-un LLM local (Ollama) |
 | `OLLAMA_URL` | `http://host.docker.internal:11434` | Adresa Ollama |
 | `OLLAMA_MODEL` | `qwen2.5:7b` | Modelul Ollama folosit la corectare |
@@ -89,6 +89,13 @@ diacriticele (fără să adauge cuvinte). Dacă Ollama nu e instalat, se sare pe
 ```bash
 ollama pull qwen2.5:7b   # sau alt model, apoi setează OLLAMA_MODEL în .env
 ```
+
+### Alegerea modelului de separare (Demucs)
+
+Din **Setări** poți alege modelul folosit la scoaterea vocii pentru piesele noi.
+Dacă o piesă deja procesată sună prost, deschide pagina piesei și folosește
+**„Re-procesează instrumentalul”** ca să refaci separarea cu alt model
+(`htdemucs`, `htdemucs_ft` sau `mdx_extra_q`).
 
 ## Expunere publică (port forwarding)
 

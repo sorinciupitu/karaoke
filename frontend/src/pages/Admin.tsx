@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Download, Plus, Shield, Trash2, Upload } from "lucide-react";
 import { downloadBackup, importBackup } from "../api/backup";
+import { getSettings, patchSettings } from "../api/settings";
 import { createUser, deleteUser, listUsers, type User } from "../api/users";
 import { useAuth } from "../auth/AuthContext";
+import { DEMUCS_MODELS } from "../lib/demucs";
 import { usePlayer } from "../player/PlayerContext";
 
 function CrossfadeSetting() {
@@ -27,6 +29,42 @@ function CrossfadeSetting() {
           {crossfadeSeconds.toFixed(1)}s
         </span>
       </div>
+    </div>
+  );
+}
+
+function DemucsSetting() {
+  const [model, setModel] = useState("htdemucs");
+
+  useEffect(() => {
+    getSettings()
+      .then((s) => setModel(s.demucs_model))
+      .catch(() => {});
+  }, []);
+
+  const change = async (value: string) => {
+    setModel(value);
+    await patchSettings({ demucs_model: value }).catch(() => {});
+  };
+
+  return (
+    <div className="rounded-xl border border-white/5 bg-surface p-4">
+      <p className="text-sm font-medium text-cream">Model separare voce (Demucs)</p>
+      <p className="text-xs text-muted">
+        Modelul folosit la scoaterea vocii pentru piesele noi. Pentru o piesă
+        existentă, poți reprocesa separat din pagina ei.
+      </p>
+      <select
+        value={model}
+        onChange={(e) => change(e.target.value)}
+        className="mt-3 w-full rounded-lg border border-white/10 bg-surface-2 px-3 py-2 text-sm text-cream outline-none focus:border-spotlight/60"
+      >
+        {DEMUCS_MODELS.map((m) => (
+          <option key={m.value} value={m.value}>
+            {m.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
@@ -140,6 +178,7 @@ export default function Admin() {
     <div>
       <h2 className="font-display text-xl font-semibold text-cream">Setări</h2>
       <div className="mt-4 space-y-3">
+        <DemucsSetting />
         <CrossfadeSetting />
         <BackupSetting />
       </div>

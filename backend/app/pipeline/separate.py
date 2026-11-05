@@ -11,13 +11,15 @@ class SeparateResult:
     vocals_path: str
 
 
-def separate(original_path: str, out_dir: str, models_dir: str) -> SeparateResult:
+def separate(
+    original_path: str, out_dir: str, models_dir: str, model_name: str | None = None
+) -> SeparateResult:
     import torch
     import torchaudio
     from demucs.apply import apply_model
     from demucs.pretrained import get_model
 
-    model = get_model(settings.DEMUCS_MODEL)
+    model = get_model(model_name or settings.DEMUCS_MODEL)
     device = pick_device()
     wav, sr = torchaudio.load(original_path)
     if sr != model.samplerate:

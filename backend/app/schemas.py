@@ -52,6 +52,8 @@ class TrackOut(BaseModel):
     lyrics: list
     lyrics_source: str | None
     musical_key: str | None
+    demucs_model: str | None
+    needs_separation: bool
     language: str
     created_at: datetime
 
@@ -95,12 +97,18 @@ class SettingsOut(BaseModel):
     crossfade_enabled: bool
     crossfade_seconds: float
     whisper_model: str
+    demucs_model: str
 
 
 class SettingsUpdate(BaseModel):
     crossfade_enabled: bool | None = None
     crossfade_seconds: float | None = None
     whisper_model: str | None = None
+    demucs_model: str | None = None
+
+
+class ReprocessIn(BaseModel):
+    model: str
 
 
 class UserCreate(BaseModel):

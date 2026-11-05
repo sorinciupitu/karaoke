@@ -4,11 +4,17 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from ..auth import get_current_user
-from ..config import settings
+from ..config import DEMUCS_MODELS, settings
 from ..db import get_db
 from ..models import PlaylistTrack, Track, User
-from ..pipeline.download import save_upload
-from ..schemas import LyricsUpdate, TrackCreate, TrackOut, TrackUpdate
+from ..pipeline.download import ensure_wav_source, save_upload
+from ..schemas import (
+    LyricsUpdate,
+    ReprocessIn,
+    TrackCreate,
+    TrackOut,
+    TrackUpdate,
+)
 
 router = APIRouter(prefix="/api/tracks", tags=["tracks"])
 
@@ -73,6 +79,7 @@ def upload_track(
         status="queued",
         language=settings.WHISPER_LANGUAGE,
         original_path=wav_path,
+        source_path=wav_path,
         instrumental_path=None if remove_vocals else wav_path,
         vocals_path=None,
         duration=duration,
@@ -169,6 +176,36 @@ def retry_track(
         track.error_count = 0
         db.commit()
         db.refresh(track)
+    return track
+
+
+@router.post("/{track_id}/reprocess", response_model=TrackOut)
+def reprocess_track(
+    track_id: int,
+    body: ReprocessIn,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    track = _own_track(db, track_id, user)
+    if not track.needs_separation:
+        raise HTTPException(
+            status_code=400, detail="piesa nu necesită separare (nu are voce de scos)"
+        )
+    if body.model not in DEMUCS_MODELS:
+        raise HTTPException(status_code=400, detail="model necunoscut")
+
+    src = ensure_wav_source(track.source_path, track.original_path)
+    if not src:
+        raise HTTPException(status_code=400, detail="sursa audio lipsește")
+
+    track.source_path = src
+    track.demucs_model = body.model
+    track.instrumental_path = None
+    track.vocals_path = None
+    track.status = "queued"
+    track.error = None
+    db.commit()
+    db.refresh(track)
     return track
 
 

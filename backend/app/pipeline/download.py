@@ -75,3 +75,24 @@ def save_upload(file, media_dir: str) -> tuple[str, float]:
     with wave.open(wav_path, "rb") as w:
         duration = w.getnframes() / float(w.getframerate() or 1)
     return wav_path, duration
+
+
+def ensure_wav_source(source_path: str | None, original_path: str | None) -> str | None:
+    """Return a PCM WAV usable as separation input.
+
+    Prefers the already-stored `source_path`; otherwise falls back to
+    `original_path` (decoding it back to WAV with ffmpeg if it was compressed).
+    """
+    if source_path and os.path.exists(source_path):
+        return source_path
+    if not original_path or not os.path.exists(original_path):
+        return None
+    if original_path.lower().endswith(".wav"):
+        return original_path
+    wav = os.path.splitext(original_path)[0] + "_src.wav"
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", original_path, "-ar", "44100", "-ac", "2", wav],
+        check=True,
+        capture_output=True,
+    )
+    return wav
