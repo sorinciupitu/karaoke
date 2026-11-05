@@ -82,6 +82,62 @@ function ReprocessSection({
   );
 }
 
+function LyricsReprocessSection({
+  track,
+  onDone,
+}: {
+  track: Track;
+  onDone: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const reprocess = async () => {
+    if (
+      !window.confirm(
+        "Re-transcriu versurile cu AI (Whisper large-v3 + corectare)? Versurile actuale se înlocuiesc când e gata.",
+      )
+    )
+      return;
+    setBusy(true);
+    setMsg("");
+    try {
+      await retryLyrics(track.id);
+      setMsg("Transcriere pornită. Versurile noi apar singure când sunt gata.");
+      onDone();
+    } catch (e) {
+      setMsg("A eșuat: " + (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-8 rounded-xl border border-white/5 bg-surface p-4">
+      <p className="text-sm font-medium text-cream">Re-procesează versurile</p>
+      <p className="text-xs text-muted">
+        Re-transcrie versurile cu noul model Whisper large-v3 și corectare AI a
+        ortografiei/diacriticelor (Ollama).
+      </p>
+      <div className="mt-3 flex items-center gap-2">
+        <button
+          onClick={reprocess}
+          disabled={busy}
+          className="flex items-center justify-center gap-1.5 rounded-lg bg-spotlight px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rose disabled:opacity-50"
+        >
+          {busy ? (
+            <Loader2 size={15} className="animate-spin" />
+          ) : (
+            <RefreshCw size={15} />
+          )}
+          Re-transcrie cu AI
+        </button>
+      </div>
+      {msg && <p className="mt-2 text-sm text-muted">{msg}</p>}
+    </div>
+  );
+}
+
 export default function TrackDetail() {
   const { id } = useParams();
   const trackId = Number(id);
@@ -199,6 +255,10 @@ export default function TrackDetail() {
 
       {track.needs_separation && ready && (
         <ReprocessSection track={track} onDone={refresh} />
+      )}
+
+      {track.needs_separation && ready && (
+        <LyricsReprocessSection track={track} onDone={refresh} />
       )}
     </div>
   );
