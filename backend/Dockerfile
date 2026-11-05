@@ -27,6 +27,17 @@ RUN if [ "$TORCH" = "cuda" ]; then \
       pip install --no-cache-dir "audio-separator[cpu]==0.48.0"; \
     fi
 
+# audio-separator may pull a different torch/torchaudio, which leaves
+# libtorchaudio.so mismatched with libtorch (breaks demucs). Re-pin the exact
+# pair after it so torch and torchaudio always match.
+RUN if [ "$TORCH" = "cuda" ]; then \
+      pip install --no-cache-dir --force-reinstall --no-deps torch==2.4.1 torchaudio==2.4.1 \
+        --index-url https://download.pytorch.org/whl/cu121; \
+    else \
+      pip install --no-cache-dir --force-reinstall --no-deps torch==2.4.1 torchaudio==2.4.1 \
+        --index-url https://download.pytorch.org/whl/cpu; \
+    fi
+
 # Heavy dependencies in their own cacheable layer, BEFORE the app code.
 #
 # demucs is installed WITHOUT its `sphn` dependency: sphn compiles native Rust
