@@ -206,6 +206,12 @@ export default function TrackDetail() {
         )}
       </header>
 
+      {track.error && (
+        <p className="mb-2 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
+          {track.error}
+        </p>
+      )}
+
       {!ready && (
         <div className="flex items-center gap-2 py-12 text-muted">
           <Loader2 size={18} className="animate-spin" />

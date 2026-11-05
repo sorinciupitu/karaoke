@@ -1,3 +1,5 @@
+import traceback
+
 from ..config import settings
 from ..db import SessionLocal
 from ..models import Track, UserSettings
@@ -97,6 +99,7 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
         track.progress = 100
         track.lyrics_status = "ready"
     except Exception as e:
+        traceback.print_exc()
         track.lyrics_status = "failed"
         track.error = f"versuri: {e}"
     db.commit()
@@ -134,6 +137,7 @@ def run_track(track_id: int, session_factory=None) -> None:
             try:
                 res = download(track.youtube_url, settings.MEDIA_DIR)
             except Exception as e:
+                traceback.print_exc()
                 track.status = "failed"
                 track.error = f"descărcare: {e}"
                 db.commit()
@@ -160,6 +164,7 @@ def run_track(track_id: int, session_factory=None) -> None:
                     src, settings.MEDIA_DIR, settings.MODELS_DIR, model_name=model
                 )
             except Exception as e:
+                traceback.print_exc()
                 track.status = "failed"
                 track.error = f"separare: {e}"
                 db.commit()
@@ -201,6 +206,7 @@ def run_track(track_id: int, session_factory=None) -> None:
                     else None
                 )
             except Exception as e:
+                traceback.print_exc()
                 track.error_count = (track.error_count or 0) + 1
                 track.error = f"encodare: {e}"
                 if track.error_count >= 3:
