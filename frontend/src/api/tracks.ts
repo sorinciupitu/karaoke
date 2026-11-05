@@ -98,3 +98,7 @@ export function reprocessTrack(id: number, model: string): Promise<Track> {
     body: JSON.stringify({ model }),
   });
 }
+
+export function retryTrack(id: number): Promise<Track> {
+  return api<Track>(`/api/tracks/${id}/retry`, { method: "POST" });
+}

@@ -7,6 +7,7 @@ import {
   reprocessTrack,
   resyncLyrics,
   retryLyrics,
+  retryTrack,
   type Track,
 } from "../api/tracks";
 import LyricsEditor from "../components/LyricsEditor";
@@ -168,12 +169,18 @@ export default function TrackDetail() {
   }
 
   const ready = track.status === "ready";
+  const failed = track.status === "failed";
   const isCurrent = current?.id === track.id;
 
   const onAction = async (kind: "resync" | "refetch" | "retry") => {
     if (kind === "resync") await resyncLyrics(trackId);
     else if (kind === "refetch") await refetchLyrics(trackId);
     else await retryLyrics(trackId);
+    await refresh();
+  };
+
+  const retryProcess = async () => {
+    await retryTrack(trackId);
     await refresh();
   };
 
@@ -212,7 +219,19 @@ export default function TrackDetail() {
         </p>
       )}
 
-      {!ready && (
+      {failed && (
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <button
+            onClick={retryProcess}
+            className="flex items-center gap-1.5 rounded-lg bg-spotlight px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rose"
+          >
+            <RefreshCw size={15} />
+            Reîncearcă procesarea
+          </button>
+        </div>
+      )}
+
+      {!ready && !failed && (
         <div className="flex items-center gap-2 py-12 text-muted">
           <Loader2 size={18} className="animate-spin" />
           {statusLabel(track.status, track.lyrics_status)}…
@@ -259,7 +278,7 @@ export default function TrackDetail() {
         )}
       </div>
 
-      {track.needs_separation && ready && (
+      {track.needs_separation && (ready || failed) && (
         <ReprocessSection track={track} onDone={refresh} />
       )}
 
