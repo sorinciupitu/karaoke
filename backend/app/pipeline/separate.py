@@ -23,6 +23,16 @@ def separate(
 ) -> SeparateResult:
     """Separate vocals/instrumental using the requested model (or the default)."""
     model = model_name or settings.DEMUCS_MODEL
+
+    # MDX23C (and Ensemble, which includes it) is a GPU model: on CPU — and
+    # especially on ARM64 — it hangs or takes an impractical amount of time.
+    # Fail fast with a clear message instead of blocking the worker for hours.
+    if model in (_MDX_MODELS | _ENSEMBLE_MODELS) and pick_device() == "cpu":
+        raise RuntimeError(
+            "MDX23C / Ensemble necesită un GPU NVIDIA; pe CPU nu funcționează "
+            "(se blochează sau durează extrem de mult). Alege alt model (ex. htdemucs)."
+        )
+
     base = os.path.splitext(os.path.basename(original_path))[0]
 
     if model in _DEMUCS_MODELS:

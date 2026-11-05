@@ -68,6 +68,8 @@ def test_separate_dispatch_demucs(monkeypatch, tmp_path):
 
 
 def test_separate_dispatch_mdx23c(monkeypatch, tmp_path):
+    monkeypatch.setattr("app.pipeline.separate.pick_device", lambda: "cuda")
+
     def fake_mdx(original, out_dir, models_dir):
         i = os.path.join(out_dir, "tmp_i.wav")
         v = os.path.join(out_dir, "tmp_v.wav")
@@ -83,6 +85,8 @@ def test_separate_dispatch_mdx23c(monkeypatch, tmp_path):
 
 
 def test_separate_dispatch_ensemble(monkeypatch, tmp_path):
+    monkeypatch.setattr("app.pipeline.separate.pick_device", lambda: "cuda")
+
     def fake_ensemble(original, out_dir, models_dir, base):
         return SeparateResult("inst.wav", "voc.wav")
 
@@ -95,6 +99,18 @@ def test_separate_dispatch_ensemble(monkeypatch, tmp_path):
 def test_separate_unknown_model_raises(tmp_path):
     with pytest.raises(ValueError):
         separate("orig.wav", str(tmp_path), str(tmp_path), model_name="nope")
+
+
+def test_mdx23c_blocked_on_cpu(monkeypatch, tmp_path):
+    monkeypatch.setattr("app.pipeline.separate.pick_device", lambda: "cpu")
+    with pytest.raises(RuntimeError, match="GPU"):
+        separate("orig.wav", str(tmp_path), str(tmp_path), model_name="mdx23c")
+
+
+def test_ensemble_blocked_on_cpu(monkeypatch, tmp_path):
+    monkeypatch.setattr("app.pipeline.separate.pick_device", lambda: "cpu")
+    with pytest.raises(RuntimeError, match="GPU"):
+        separate("orig.wav", str(tmp_path), str(tmp_path), model_name="ensemble")
 
 
 def test_ensure_wav_source_uses_existing_source(tmp_path):
