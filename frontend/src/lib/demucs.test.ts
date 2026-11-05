@@ -2,11 +2,12 @@ import { describe, expect, it } from "vitest";
 import { DEMUCS_MODELS, demucsLabel } from "./demucs";
 
 describe("DEMUCS_MODELS", () => {
-  it("offers the three choices", () => {
+  it("offers the model choices", () => {
     expect(DEMUCS_MODELS.map((m) => m.value)).toEqual([
       "htdemucs",
       "htdemucs_ft",
-      "mdx_extra_q",
+      "mdx23c",
+      "ensemble",
     ]);
   });
 

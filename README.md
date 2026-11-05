@@ -73,7 +73,7 @@ Fiecare cont are **biblioteca și playlisturile lui proprii**, complet izolate.
 | `WHISPER_LANGUAGE` | `ro` | Limba implicită a transcrierii |
 | `DEVICE` | `auto` | Dispozitiv de calcul: `auto` / `cuda` / `cpu` |
 | `WHISPER_COMPUTE_TYPE` | `auto` | Precizia Whisper: `auto` / `float16` / `int8_float16` / `int8` |
-| `DEMUCS_MODEL` | `htdemucs` | Modelul implicit de separare a vocii (`htdemucs` / `htdemucs_ft` / `mdx_extra_q`) — schimbabil și din **Setări** |
+| `DEMUCS_MODEL` | `htdemucs` | Modelul implicit de separare a vocii (`htdemucs` / `htdemucs_ft` / `mdx23c` / `ensemble`) — schimbabil și din **Setări** |
 | `OLLAMA_ENABLED` | `true` | Corectează versurile printr-un LLM local (Ollama) |
 | `OLLAMA_URL` | `http://host.docker.internal:11434` | Adresa Ollama |
 | `OLLAMA_MODEL` | `qwen2.5:7b` | Modelul Ollama folosit la corectare |
@@ -90,12 +90,16 @@ diacriticele (fără să adauge cuvinte). Dacă Ollama nu e instalat, se sare pe
 ollama pull qwen2.5:7b   # sau alt model, apoi setează OLLAMA_MODEL în .env
 ```
 
-### Alegerea modelului de separare (Demucs)
+### Alegerea modelului de separare
 
 Din **Setări** poți alege modelul folosit la scoaterea vocii pentru piesele noi.
 Dacă o piesă deja procesată sună prost, deschide pagina piesei și folosește
-**„Re-procesează instrumentalul”** ca să refaci separarea cu alt model
-(`htdemucs`, `htdemucs_ft` sau `mdx_extra_q`).
+**„Re-procesează instrumentalul”** ca să refaci separarea cu alt model:
+
+- **Demucs (original)** — `htdemucs`, rapid, general.
+- **Demucs FT (fine-tuned)** — `htdemucs_ft`, bun la aranjamente acustice complexe.
+- **MDX23C-InstVoc-HQ** — `mdx23c`, instrumental natural, fără „găuri” (necesită descărcarea modelului ~2 GB la prima folosire; lent pe CPU, recomandat pe GPU).
+- **Ensemble** — `ensemble`, combină MDX23C + Demucs FT (algoritm Max Spec) pentru calitate maximă (procesare dublă, mai lent).
 
 ## Expunere publică (port forwarding)
 

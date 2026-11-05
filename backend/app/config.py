@@ -24,5 +24,8 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Modele demucs acceptate (expuse în UI pentru alegere per piesă / global).
-DEMUCS_MODELS = ["htdemucs", "htdemucs_ft", "mdx_extra_q"]
+# Modele de separare acceptate (expuse în UI pentru alegere per piesă / global).
+#   htdemucs / htdemucs_ft  -> Demucs (torch)
+#   mdx23c                 -> MDX23C-InstVoc-HQ (audio-separator / ONNX)
+#   ensemble               -> MDX23C + htdemucs_ft (Max Spec)
+SEPARATION_MODELS = ["htdemucs", "htdemucs_ft", "mdx23c", "ensemble"]

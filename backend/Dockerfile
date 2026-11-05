@@ -19,6 +19,14 @@ RUN if [ "$TORCH" = "cuda" ]; then \
         --index-url https://download.pytorch.org/whl/cpu; \
     fi
 
+# MDX-Net / MDX23C separation via audio-separator (ONNX). The runtime variant
+# (CPU onnxruntime vs GPU onnxruntime-gpu) matches the torch variant above.
+RUN if [ "$TORCH" = "cuda" ]; then \
+      pip install --no-cache-dir "audio-separator[gpu]==0.48.0"; \
+    else \
+      pip install --no-cache-dir "audio-separator[cpu]==0.48.0"; \
+    fi
+
 # Heavy dependencies in their own cacheable layer, BEFORE the app code.
 #
 # demucs is installed WITHOUT its `sphn` dependency: sphn compiles native Rust

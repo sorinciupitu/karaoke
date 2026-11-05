@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from ..auth import get_current_user
-from ..config import DEMUCS_MODELS, settings
+from ..config import SEPARATION_MODELS, settings
 from ..db import get_db
 from ..models import PlaylistTrack, Track, User
 from ..pipeline.download import ensure_wav_source, save_upload
@@ -191,7 +191,7 @@ def reprocess_track(
         raise HTTPException(
             status_code=400, detail="piesa nu necesită separare (nu are voce de scos)"
         )
-    if body.model not in DEMUCS_MODELS:
+    if body.model not in SEPARATION_MODELS:
         raise HTTPException(status_code=400, detail="model necunoscut")
 
     src = ensure_wav_source(track.source_path, track.original_path)
