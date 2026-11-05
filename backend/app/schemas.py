@@ -54,6 +54,7 @@ class TrackOut(BaseModel):
     musical_key: str | None
     demucs_model: str | None
     needs_separation: bool
+    progress: int
     language: str
     created_at: datetime
 

@@ -28,6 +28,7 @@ def transcribe(
     model: str,
     models_dir: str,
     initial_prompt: str | None = None,
+    progress_cb=None,
 ) -> list[Word]:
     from faster_whisper import WhisperModel
 
@@ -45,4 +46,6 @@ def transcribe(
     for seg in segments:
         for w in seg.words or []:
             words.append(Word(start=w.start, end=w.end, text=w.word.strip()))
+        if progress_cb is not None:
+            progress_cb(seg.end)
     return words

@@ -111,7 +111,7 @@ def test_run_lyrics_auto_falls_back_to_whisper(session_factory, monkeypatch):
     monkeypatch.setattr("app.pipeline.runner.fetch_lrclib", lambda t, a, d: None)
     monkeypatch.setattr(
         "app.pipeline.runner.transcribe",
-        lambda v, l, m, md: [Word(0.0, 0.5, "hai"), Word(0.6, 1.0, "tu")],
+        lambda v, l, m, md, initial_prompt=None, progress_cb=None: [Word(0.0, 0.5, "hai"), Word(0.6, 1.0, "tu")],
     )
     monkeypatch.setattr("app.pipeline.runner.correct_lines", lambda lines: lines)
 
@@ -132,7 +132,7 @@ def test_run_lyrics_corrects_with_ollama(session_factory, monkeypatch):
     monkeypatch.setattr("app.pipeline.runner.fetch_lrclib", lambda t, a, d: None)
     monkeypatch.setattr(
         "app.pipeline.runner.transcribe",
-        lambda v, l, m, md: [Word(0.0, 0.5, "hai"), Word(0.6, 1.0, "tu")],
+        lambda v, l, m, md, initial_prompt=None, progress_cb=None: [Word(0.0, 0.5, "hai"), Word(0.6, 1.0, "tu")],
     )
 
     calls = []
@@ -158,7 +158,7 @@ def test_run_lyrics_failure_sets_failed_status(session_factory, monkeypatch):
 
     monkeypatch.setattr("app.pipeline.runner.fetch_lrclib", lambda t, a, d: None)
 
-    def boom(v, l, m, md):
+    def boom(v, l, m, md, initial_prompt=None, progress_cb=None):
         raise RuntimeError("whisper failed")
 
     monkeypatch.setattr("app.pipeline.runner.transcribe", boom)
@@ -211,6 +211,48 @@ def test_next_lyrics_track_finds_ready_with_pending_lyrics(session_factory):
 
     pending = next_lyrics_track(session_factory=Session)
     assert pending.id == t1_id
+
+
+def test_run_track_sets_progress_100_when_ready(session_factory, monkeypatch):
+    Session = session_factory
+    tid = _make_track(Session)
+
+    monkeypatch.setattr(
+        "app.pipeline.runner.download",
+        lambda url, md: DownloadResult("orig.wav", "t", "a", 10.0, "abc"),
+    )
+    monkeypatch.setattr(
+        "app.pipeline.runner.separate",
+        lambda o, out, m, model_name=None: SeparateResult("inst.wav", "voc.wav"),
+    )
+    monkeypatch.setattr("app.pipeline.runner.encode_to_m4a", lambda wav, out: out)
+
+    run_track(tid, session_factory=Session)
+
+    db = Session()
+    t = db.get(Track, tid)
+    assert t.status == "ready"
+    assert t.progress == 100
+    db.close()
+
+
+def test_run_lyrics_sets_progress_100_when_ready(session_factory, monkeypatch):
+    Session = session_factory
+    tid = _make_ready_track(Session)
+
+    monkeypatch.setattr(
+        "app.pipeline.runner.fetch_lrclib",
+        lambda t, a, d: [Line("vers", 0.0, 3.0)],
+    )
+    monkeypatch.setattr("app.pipeline.runner.correct_lines", lambda lines: lines)
+
+    run_lyrics(tid, session_factory=Session)
+
+    db = Session()
+    t = db.get(Track, tid)
+    assert t.lyrics_status == "ready"
+    assert t.progress == 100
+    db.close()
 
 
 def test_separation_model_priority(session_factory, monkeypatch):

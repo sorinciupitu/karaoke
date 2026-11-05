@@ -22,6 +22,7 @@ export interface Track {
   musical_key: string | null;
   demucs_model: string | null;
   needs_separation: boolean;
+  progress: number;
   language: string;
   created_at: string;
 }

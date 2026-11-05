@@ -54,6 +54,7 @@ class Track(Base):
     language: Mapped[str] = mapped_column(String(16), default="ro")
     source: Mapped[str] = mapped_column(String(16), default="youtube")
     needs_separation: Mapped[bool] = mapped_column(Boolean, default=True)
+    progress: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 

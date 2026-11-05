@@ -24,18 +24,43 @@ def _separation_model(track: Track, db) -> str:
     return settings.DEMUCS_MODEL
 
 
+def _transcribe_with_progress(track: Track, db, prompt: str | None = None) -> list:
+    """Transcribe vocals, updating track.progress as segments stream in."""
+    track.progress = 0
+    db.commit()
+    last = {"t": 0.0}
+
+    def cb(current_time: float) -> None:
+        dur = track.duration or 0.0
+        if dur <= 0:
+            return
+        import time
+
+        now = time.time()
+        if now - last["t"] < 2.0:
+            return
+        pct = max(1, min(95, int(current_time / dur * 100)))
+        track.progress = pct
+        db.commit()
+        last["t"] = now
+
+    return transcribe(
+        track.vocals_path,
+        track.language,
+        settings.WHISPER_MODEL,
+        settings.MODELS_DIR,
+        initial_prompt=prompt or None,
+        progress_cb=cb,
+    )
+
+
 def _apply_lyrics(track: Track, db, mode: str) -> None:
     try:
         if mode == "transcribe":
             if not track.vocals_path:
                 track.lyrics = track.lyrics or []
             else:
-                words = transcribe(
-                    track.vocals_path,
-                    track.language,
-                    settings.WHISPER_MODEL,
-                    settings.MODELS_DIR,
-                )
+                words = _transcribe_with_progress(track, db)
                 lines = correct_lines(group_words(words))
                 track.lyrics = _lines_to_json(lines)
                 track.lyrics_source = "whisper"
@@ -44,13 +69,7 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
                 track.lyrics = track.lyrics or []
             else:
                 prompt = "\n".join(l["text"] for l in (track.lyrics or [])).strip()
-                words = transcribe(
-                    track.vocals_path,
-                    track.language,
-                    settings.WHISPER_MODEL,
-                    settings.MODELS_DIR,
-                    initial_prompt=prompt or None,
-                )
+                words = _transcribe_with_progress(track, db, prompt=prompt)
                 new_lines = group_words(words)
                 edited = track.lyrics or []
                 if len(new_lines) == len(edited):
@@ -68,18 +87,14 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
                 track.lyrics = _lines_to_json(lines)
                 track.lyrics_source = "lrclib"
             elif track.vocals_path:
-                words = transcribe(
-                    track.vocals_path,
-                    track.language,
-                    settings.WHISPER_MODEL,
-                    settings.MODELS_DIR,
-                )
+                words = _transcribe_with_progress(track, db)
                 lines = correct_lines(group_words(words))
                 track.lyrics = _lines_to_json(lines)
                 track.lyrics_source = "whisper"
             else:
                 track.lyrics = []
                 track.lyrics_source = None
+        track.progress = 100
         track.lyrics_status = "ready"
     except Exception as e:
         track.lyrics_status = "failed"
@@ -114,6 +129,7 @@ def run_track(track_id: int, session_factory=None) -> None:
         # 1. download
         if not track.original_path:
             track.status = "downloading"
+            track.progress = 10
             db.commit()
             try:
                 res = download(track.youtube_url, settings.MEDIA_DIR)
@@ -135,6 +151,7 @@ def run_track(track_id: int, session_factory=None) -> None:
             track.instrumental_path and track.vocals_path
         ):
             track.status = "separating"
+            track.progress = 30
             db.commit()
             src = track.source_path or track.original_path
             model = _separation_model(track, db)
@@ -150,6 +167,7 @@ def run_track(track_id: int, session_factory=None) -> None:
             track.instrumental_path = res.instrumental_path
             track.vocals_path = res.vocals_path
             track.demucs_model = model
+            track.progress = 60
             db.commit()
 
         # 2.5 detect the musical key from the instrumental
@@ -165,6 +183,7 @@ def run_track(track_id: int, session_factory=None) -> None:
         #    playable immediately, while transcription continues in the background.
         if track.status != "ready":
             track.status = "encoding"
+            track.progress = 80
             db.commit()
             try:
                 inst = encode_to_m4a(
@@ -193,6 +212,7 @@ def run_track(track_id: int, session_factory=None) -> None:
             track.vocals_path = voc
             track.error_count = 0
             track.status = "ready"
+            track.progress = 100
             db.commit()
     finally:
         db.close()

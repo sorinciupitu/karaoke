@@ -203,7 +203,7 @@ def test_resync_preserves_edited_text(session_factory, monkeypatch):
 
     monkeypatch.setattr(
         "app.pipeline.runner.transcribe",
-        lambda v, l, m, md, initial_prompt=None: [
+        lambda v, l, m, md, initial_prompt=None, progress_cb=None: [
             Word(0.0, 0.5, "a"),
             Word(2.2, 2.7, "b"),
         ],
