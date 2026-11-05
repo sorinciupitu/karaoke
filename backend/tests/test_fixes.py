@@ -128,6 +128,9 @@ def test_encode_partial_failure_is_atomic(session_factory, monkeypatch):
         "app.pipeline.runner.separate",
         lambda o, out, m, model_name=None: SeparateResult("inst.wav", "voc.wav"),
     )
+    monkeypatch.setattr(
+        "app.pipeline.runner.ensure_wav_source", lambda sp, op: sp or op or "orig.wav"
+    )
     monkeypatch.setattr("app.pipeline.runner.fetch_lrclib", lambda t, a, d: [Line("v", 0.0, 1.0)])
 
     calls = {"n": 0}
@@ -161,6 +164,9 @@ def test_encode_bounded_retry_marks_failed(session_factory, monkeypatch):
     monkeypatch.setattr(
         "app.pipeline.runner.separate",
         lambda o, out, m, model_name=None: SeparateResult("inst.wav", "voc.wav"),
+    )
+    monkeypatch.setattr(
+        "app.pipeline.runner.ensure_wav_source", lambda sp, op: sp or op or "orig.wav"
     )
     monkeypatch.setattr("app.pipeline.runner.fetch_lrclib", lambda t, a, d: [Line("v", 0.0, 1.0)])
 

@@ -70,6 +70,9 @@ def test_run_track_marks_ready_but_leaves_lyrics_pending(session_factory, monkey
         "app.pipeline.runner.separate",
         lambda o, out, m, model_name=None: SeparateResult("inst.wav", "voc.wav"),
     )
+    monkeypatch.setattr(
+        "app.pipeline.runner.ensure_wav_source", lambda sp, op: sp or op or "orig.wav"
+    )
     monkeypatch.setattr("app.pipeline.runner.encode_to_m4a", lambda wav, out: out)
 
     run_track(tid, session_factory=Session)
@@ -224,6 +227,9 @@ def test_run_track_sets_progress_100_when_ready(session_factory, monkeypatch):
     monkeypatch.setattr(
         "app.pipeline.runner.separate",
         lambda o, out, m, model_name=None: SeparateResult("inst.wav", "voc.wav"),
+    )
+    monkeypatch.setattr(
+        "app.pipeline.runner.ensure_wav_source", lambda sp, op: sp or op or "orig.wav"
     )
     monkeypatch.setattr("app.pipeline.runner.encode_to_m4a", lambda wav, out: out)
 

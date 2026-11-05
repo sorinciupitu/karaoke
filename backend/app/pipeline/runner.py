@@ -3,7 +3,7 @@ import traceback
 from ..config import settings
 from ..db import SessionLocal
 from ..models import Track, UserSettings
-from .download import download
+from .download import download, ensure_wav_source
 from .encode import encode_to_m4a
 from .key_detect import detect_key
 from .lyrics import group_words
@@ -157,7 +157,17 @@ def run_track(track_id: int, session_factory=None) -> None:
             track.status = "separating"
             track.progress = 30
             db.commit()
-            src = track.source_path or track.original_path
+            # Resolve the source WAV; if the stored source was deleted, re-derive
+            # it from the (compressed) original so reprocessing never breaks.
+            src = ensure_wav_source(track.source_path, track.original_path)
+            if not src:
+                track.status = "failed"
+                track.error = "separare: sursa audio lipsește"
+                db.commit()
+                return
+            if src != track.source_path:
+                track.source_path = src
+                db.commit()
             model = _separation_model(track, db)
             try:
                 res = separate(

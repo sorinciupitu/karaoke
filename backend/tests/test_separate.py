@@ -95,3 +95,25 @@ def test_separate_dispatch_ensemble(monkeypatch, tmp_path):
 def test_separate_unknown_model_raises(tmp_path):
     with pytest.raises(ValueError):
         separate("orig.wav", str(tmp_path), str(tmp_path), model_name="nope")
+
+
+def test_ensure_wav_source_uses_existing_source(tmp_path):
+    from app.pipeline.download import ensure_wav_source
+
+    src = tmp_path / "a.wav"
+    src.write_bytes(b"RIFF-placeholder")
+    assert ensure_wav_source(str(src), "orig.m4a") == str(src)
+
+
+def test_ensure_wav_source_falls_back_to_wav_original(tmp_path):
+    from app.pipeline.download import ensure_wav_source
+
+    orig = tmp_path / "orig.wav"
+    orig.write_bytes(b"RIFF-placeholder")
+    assert ensure_wav_source(None, str(orig)) == str(orig)
+
+
+def test_ensure_wav_source_returns_none_when_both_missing(tmp_path):
+    from app.pipeline.download import ensure_wav_source
+
+    assert ensure_wav_source("/nope/a.wav", "/nope/b.m4a") is None

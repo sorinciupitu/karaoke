@@ -96,6 +96,9 @@ def test_run_track_instrumental_upload_skips_separation(session_factory, monkeyp
 
     monkeypatch.setattr("app.pipeline.runner.separate", fake_separate)
     monkeypatch.setattr("app.pipeline.runner.encode_to_m4a", lambda wav, out: out)
+    monkeypatch.setattr(
+        "app.pipeline.runner.ensure_wav_source", lambda sp, op: sp or op or "orig.wav"
+    )
 
     run_track(tid, session_factory=Session)
 
@@ -130,6 +133,9 @@ def test_run_track_upload_with_vocals_separates(session_factory, monkeypatch):
 
     monkeypatch.setattr("app.pipeline.runner.separate", fake_separate)
     monkeypatch.setattr("app.pipeline.runner.encode_to_m4a", lambda wav, out: out)
+    monkeypatch.setattr(
+        "app.pipeline.runner.ensure_wav_source", lambda sp, op: sp or op or "orig.wav"
+    )
 
     run_track(tid, session_factory=Session)
 
