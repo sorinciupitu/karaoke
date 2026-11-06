@@ -25,12 +25,13 @@ export default function LyricsEditor({ track, onSaved, onAction }: Props) {
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [importText, setImportText] = useState("");
+  const [syncMsg, setSyncMsg] = useState("");
 
   useEffect(() => {
     setLines(track.lyrics ?? []);
     setTitle(track.title);
     setArtist(track.artist);
-  }, [track.id]);
+  }, [track.id, track.lyrics_status]);
 
   const save = async () => {
     setBusy(true);
@@ -64,11 +65,18 @@ export default function LyricsEditor({ track, onSaved, onAction }: Props) {
     // If the corrected text has the same number of lines, keep the already
     // detected timings (no need to re-run the alignment).
     const preserve = texts.length === old.length && old.length > 0;
-    const parsed = parseLyricsText(importText, old);
+    const parsed = parseLyricsText(importText, old, track.duration);
     setBusy(true);
     try {
       let t = await updateLyrics(track.id, parsed);
-      if (!preserve) t = await resyncLyrics(track.id);
+      if (!preserve) {
+        t = await resyncLyrics(track.id);
+        setSyncMsg(
+          "Versurile se sincronizează cu piesa (Whisper)… se actualizează singure când sunt gata.",
+        );
+      } else {
+        setSyncMsg("");
+      }
       setLines(parsed);
       setImportText("");
       onSaved(t);
@@ -121,6 +129,12 @@ export default function LyricsEditor({ track, onSaved, onAction }: Props) {
           </button>
         </div>
       </div>
+
+      {syncMsg && (
+        <p className="rounded-lg bg-violet/10 px-3 py-2 text-xs text-violet">
+          {syncMsg}
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block">

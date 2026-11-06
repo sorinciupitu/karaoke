@@ -29,16 +29,16 @@ describe("lyricsEdit helpers", () => {
 describe("parseLyricsText", () => {
   it("splits lines, trims and drops blanks", () => {
     expect(parseLyricsText("primul vers\n\nal doilea vers\n   \n")).toEqual([
-      { text: "primul vers", start: 0, end: 0 },
-      { text: "al doilea vers", start: 0, end: 0 },
+      { text: "primul vers", start: 0, end: 4 },
+      { text: "al doilea vers", start: 4, end: 8 },
     ]);
   });
 
   it("handles CRLF line endings", () => {
     expect(parseLyricsText("a\r\nb\r\nc")).toEqual([
-      { text: "a", start: 0, end: 0 },
-      { text: "b", start: 0, end: 0 },
-      { text: "c", start: 0, end: 0 },
+      { text: "a", start: 0, end: 4 },
+      { text: "b", start: 4, end: 8 },
+      { text: "c", start: 8, end: 12 },
     ]);
   });
 
@@ -58,11 +58,18 @@ describe("parseLyricsText", () => {
     ]);
   });
 
-  it("starts from zero when the line count differs", () => {
+  it("spreads evenly across the track duration when the line count differs", () => {
     const existing: Line[] = [{ text: "vechi 1", start: 0, end: 2 }];
-    expect(parseLyricsText("a\nb", existing)).toEqual([
-      { text: "a", start: 0, end: 0 },
-      { text: "b", start: 0, end: 0 },
+    expect(parseLyricsText("a\nb", existing, 100)).toEqual([
+      { text: "a", start: 0, end: 50 },
+      { text: "b", start: 50, end: 100 },
+    ]);
+  });
+
+  it("uses a default duration when none is given", () => {
+    expect(parseLyricsText("a\nb")).toEqual([
+      { text: "a", start: 0, end: 4 },
+      { text: "b", start: 4, end: 8 },
     ]);
   });
 });
