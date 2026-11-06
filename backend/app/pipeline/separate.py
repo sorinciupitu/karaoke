@@ -102,11 +102,19 @@ def _run_roformer(original_path: str, out_dir: str, models_dir: str) -> tuple[st
     if not inst or not voc:
         raise RuntimeError(f"RoFormer nu a produs ambele fișiere: {output_files}")
 
+    # audio-separator returns paths relative to output_dir — make them absolute.
+    inst = _abs_path(out_dir, inst)
+    voc = _abs_path(out_dir, voc)
+
     # Normalize each stem to a standard 16-bit PCM stereo WAV so downstream
     # readers (torchaudio/soundfile) can always open it.
     inst = _reencode_wav(inst)
     voc = _reencode_wav(voc)
     return inst, voc
+
+
+def _abs_path(out_dir: str, path: str) -> str:
+    return path if os.path.isabs(path) else os.path.join(out_dir, path)
 
 
 def _reencode_wav(src: str) -> str:

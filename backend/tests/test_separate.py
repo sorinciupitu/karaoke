@@ -133,3 +133,15 @@ def test_ensure_wav_source_returns_none_when_both_missing(tmp_path):
     from app.pipeline.download import ensure_wav_source
 
     assert ensure_wav_source("/nope/a.wav", "/nope/b.m4a") is None
+
+
+def test_abs_path_resolves_relative():
+    from app.pipeline.separate import _abs_path
+
+    assert _abs_path("/data/media", "foo.wav") == "/data/media/foo.wav"
+
+
+def test_abs_path_keeps_absolute():
+    from app.pipeline.separate import _abs_path
+
+    assert _abs_path("/data/media", "/other/foo.wav") == "/other/foo.wav"
