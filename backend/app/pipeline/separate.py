@@ -101,7 +101,25 @@ def _run_mdx23c(original_path: str, out_dir: str, models_dir: str) -> tuple[str,
     voc = _pick_stem(output_files, "vocals")
     if not inst or not voc:
         raise RuntimeError(f"MDX23C nu a produs ambele fișiere: {output_files}")
+
+    # Normalize each stem to a standard 16-bit PCM stereo WAV: some MDXC
+    # outputs use a container/format that soundfile/torchaudio cannot read
+    # back ("Error opening ... System error").
+    inst = _reencode_wav(inst)
+    voc = _reencode_wav(voc)
     return inst, voc
+
+
+def _reencode_wav(src: str) -> str:
+    import subprocess
+
+    dst = src + ".pcm.wav"
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", src, "-ar", "44100", "-ac", "2", "-c:a", "pcm_s16le", dst],
+        check=True,
+        capture_output=True,
+    )
+    return dst
 
 
 def _run_ensemble(original_path: str, out_dir: str, models_dir: str, base: str) -> SeparateResult:
