@@ -73,7 +73,7 @@ Fiecare cont are **biblioteca și playlisturile lui proprii**, complet izolate.
 | `WHISPER_LANGUAGE` | `ro` | Limba implicită a transcrierii |
 | `DEVICE` | `auto` | Dispozitiv de calcul: `auto` / `cuda` / `cpu` |
 | `WHISPER_COMPUTE_TYPE` | `auto` | Precizia Whisper: `auto` / `float16` / `int8_float16` / `int8` |
-| `DEMUCS_MODEL` | `htdemucs` | Modelul implicit de separare a vocii (`htdemucs` / `htdemucs_ft` / `mdx23c` / `ensemble`) — schimbabil și din **Setări** |
+| `DEMUCS_MODEL` | `htdemucs` | Modelul implicit de separare a vocii (`htdemucs` / `htdemucs_ft` / `roformer` / `ensemble`) — schimbabil și din **Setări** |
 | `OLLAMA_ENABLED` | `true` | Corectează versurile printr-un LLM local (Ollama) |
 | `OLLAMA_URL` | `http://host.docker.internal:11434` | Adresa Ollama |
 | `OLLAMA_MODEL` | `qwen2.5:7b` | Modelul Ollama folosit la corectare |
@@ -98,8 +98,8 @@ Dacă o piesă deja procesată sună prost, deschide pagina piesei și foloseșt
 
 - **Demucs (original)** — `htdemucs`, rapid, general.
 - **Demucs FT (fine-tuned)** — `htdemucs_ft`, bun la aranjamente acustice complexe.
-- **MDX23C-InstVoc-HQ** — `mdx23c`, instrumental natural, fără „găuri” (necesită descărcarea modelului ~2 GB la prima folosire; lent pe CPU, recomandat pe GPU).
-- **Ensemble** — `ensemble`, combină MDX23C + Demucs FT (algoritm Max Spec) pentru calitate maximă (procesare dublă, mai lent).
+- **RoFormer (BS-RoFormer)** — `roformer`, instrumental natural, calitate ridicată (necesită descărcarea modelului la prima folosire; recomandat pe GPU).
+- **Ensemble** — `ensemble`, combină RoFormer + Demucs FT (algoritm Max Spec) pentru calitate maximă (procesare dublă, mai lent).
 
 ## Expunere publică (port forwarding)
 

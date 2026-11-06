@@ -6,7 +6,7 @@ describe("DEMUCS_MODELS", () => {
     expect(DEMUCS_MODELS.map((m) => m.value)).toEqual([
       "htdemucs",
       "htdemucs_ft",
-      "mdx23c",
+      "roformer",
       "ensemble",
     ]);
   });

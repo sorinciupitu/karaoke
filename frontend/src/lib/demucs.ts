@@ -1,8 +1,8 @@
 export const DEMUCS_MODELS = [
   { value: "htdemucs", label: "Demucs (original)" },
   { value: "htdemucs_ft", label: "Demucs FT (fine-tuned)" },
-  { value: "mdx23c", label: "MDX23C-InstVoc-HQ" },
-  { value: "ensemble", label: "Ensemble (MDX23C + Demucs FT)" },
+  { value: "roformer", label: "RoFormer (BS-RoFormer)" },
+  { value: "ensemble", label: "Ensemble (RoFormer + Demucs FT)" },
 ] as const;
 
 export type DemucsModel = (typeof DEMUCS_MODELS)[number]["value"];

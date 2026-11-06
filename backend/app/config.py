@@ -28,6 +28,6 @@ settings = Settings()
 
 # Modele de separare acceptate (expuse în UI pentru alegere per piesă / global).
 #   htdemucs / htdemucs_ft  -> Demucs (torch)
-#   mdx23c                 -> MDX23C-InstVoc-HQ (audio-separator / ONNX)
-#   ensemble               -> MDX23C + htdemucs_ft (Max Spec)
-SEPARATION_MODELS = ["htdemucs", "htdemucs_ft", "mdx23c", "ensemble"]
+#   roformer                -> BS-RoFormer (audio-separator / ONNX)
+#   ensemble                -> RoFormer + htdemucs_ft (Max Spec)
+SEPARATION_MODELS = ["htdemucs", "htdemucs_ft", "roformer", "ensemble"]
