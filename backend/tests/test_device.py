@@ -5,9 +5,12 @@ import types
 from app.pipeline.device import pick_device, pick_whisper_compute_type
 
 
-def _fake_torch(available: bool):
+def _fake_torch(available: bool, free_bytes=10 * 1024**3, total_bytes=12 * 1024**3):
     mod = types.ModuleType("torch")
-    mod.cuda = types.SimpleNamespace(is_available=lambda: available)
+    mod.cuda = types.SimpleNamespace(
+        is_available=lambda: available,
+        mem_get_info=lambda: (free_bytes, total_bytes),
+    )
     return mod
 
 
@@ -21,6 +24,12 @@ def test_pick_device_uses_cuda_when_available(monkeypatch):
     monkeypatch.setattr("app.config.settings.DEVICE", "auto")
     monkeypatch.setitem(sys.modules, "torch", _fake_torch(True))
     assert pick_device() == "cuda"
+
+
+def test_pick_device_falls_back_to_cpu_when_gpu_full(monkeypatch):
+    monkeypatch.setattr("app.config.settings.DEVICE", "auto")
+    monkeypatch.setitem(sys.modules, "torch", _fake_torch(True, free_bytes=1 * 1024**3))
+    assert pick_device() == "cpu"
 
 
 def test_pick_device_falls_back_to_cpu_when_torch_missing(monkeypatch):

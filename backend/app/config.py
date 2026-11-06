@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     WHISPER_CPU_MODEL: str = "medium"
     WHISPER_LANGUAGE: str = "ro"
     DEVICE: str = "auto"  # auto | cuda | cpu
+    CUDA_MIN_FREE_GB: float = 4.0  # sub acest prag de memorie GPU liberă, trecem pe CPU
     WHISPER_COMPUTE_TYPE: str = "auto"  # auto | float16 | int8_float16 | int8
     DEMUCS_MODEL: str = "htdemucs"
     OLLAMA_ENABLED: bool = True
