@@ -13,6 +13,7 @@ services:
       MODELS_DIR: /models
       TORCH_HOME: /models
       WHISPER_MODEL: ${WHISPER_MODEL:-large-v3}
+      WHISPER_CPU_MODEL: ${WHISPER_CPU_MODEL:-medium}
       WHISPER_LANGUAGE: ${WHISPER_LANGUAGE:-ro}
       DEVICE: ${DEVICE:-auto}
       WHISPER_COMPUTE_TYPE: ${WHISPER_COMPUTE_TYPE:-auto}

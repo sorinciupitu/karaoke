@@ -60,3 +60,14 @@ def test_compute_type_cpu_defaults_to_int8(monkeypatch):
 def test_compute_type_honours_override(monkeypatch):
     monkeypatch.setattr("app.config.settings.WHISPER_COMPUTE_TYPE", "float16")
     assert pick_whisper_compute_type("cpu") == "float16"
+
+
+def test_effective_model_downgrades_large_v3_on_cpu(monkeypatch):
+    from app.pipeline.transcribe import effective_model
+
+    monkeypatch.setattr("app.config.settings.WHISPER_CPU_MODEL", "medium")
+    assert effective_model("large-v3", "cpu") == "medium"
+    assert effective_model("large", "cpu") == "medium"
+    assert effective_model("large-v3", "cuda") == "large-v3"
+    assert effective_model("medium", "cpu") == "medium"
+    assert effective_model("small", "cpu") == "small"

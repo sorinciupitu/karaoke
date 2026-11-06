@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     MEDIA_DIR: str = "./media"
     MODELS_DIR: str = "./models"
     WHISPER_MODEL: str = "large-v3"
+    WHISPER_CPU_MODEL: str = "medium"
     WHISPER_LANGUAGE: str = "ro"
     DEVICE: str = "auto"  # auto | cuda | cpu
     WHISPER_COMPUTE_TYPE: str = "auto"  # auto | float16 | int8_float16 | int8

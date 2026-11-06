@@ -1,5 +1,13 @@
+from ..config import settings
 from .device import pick_device, pick_whisper_compute_type
 from .lyrics import Line, Word, parse_lrc
+
+
+def effective_model(model: str, device: str) -> str:
+    """large-v3 (and large) hangs / is impractically slow on CPU — downgrade."""
+    if device == "cpu" and model in ("large-v3", "large"):
+        return settings.WHISPER_CPU_MODEL
+    return model
 
 
 def fetch_lrclib(title: str, artist: str, duration: float) -> list[Line] | None:
@@ -34,6 +42,7 @@ def transcribe(
 
     device = pick_device()
     compute_type = pick_whisper_compute_type(device)
+    model = effective_model(model, device)
     m = WhisperModel(model, device=device, compute_type=compute_type, download_root=models_dir)
     segments, _info = m.transcribe(
         vocals_path,
