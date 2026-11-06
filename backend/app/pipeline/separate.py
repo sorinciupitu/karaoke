@@ -114,11 +114,15 @@ def _reencode_wav(src: str) -> str:
     import subprocess
 
     dst = src + ".pcm.wav"
-    subprocess.run(
-        ["ffmpeg", "-y", "-i", src, "-ar", "44100", "-ac", "2", "-c:a", "pcm_s16le", dst],
-        check=True,
-        capture_output=True,
-    )
+    try:
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", src, "-ar", "44100", "-ac", "2", "-c:a", "pcm_s16le", dst],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"re-encodare ffmpeg eșuată: {e.stderr or e}") from e
     return dst
 
 
