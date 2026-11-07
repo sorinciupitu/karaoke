@@ -2,8 +2,21 @@ FROM python:3.11-slim
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        ffmpeg build-essential pkg-config libopus-dev \
+        ffmpeg build-essential pkg-config libopus-dev curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+# Deno JS runtime — needed by yt-dlp's EJS solver for YouTube's "n challenge".
+RUN set -eux; \
+    case "$(uname -m)" in \
+      x86_64) DARCH="x86_64-unknown-linux-gnu" ;; \
+      aarch64) DARCH="aarch64-unknown-linux-gnu" ;; \
+      *) echo "unsupported arch"; exit 1 ;; \
+    esac; \
+    curl -fsSL "https://github.com/denoland/deno/releases/latest/download/deno-${DARCH}.zip" -o /tmp/deno.zip; \
+    python -c "import zipfile; zipfile.ZipFile('/tmp/deno.zip').extract('deno', '/usr/local/bin')"; \
+    chmod +x /usr/local/bin/deno; \
+    rm /tmp/deno.zip; \
+    deno --version
 
 WORKDIR /app
 
@@ -56,7 +69,7 @@ RUN pip install --no-cache-dir --no-deps demucs==4.1.0 \
         "bcrypt>=4.0" \
         "httpx>=0.27" \
         "python-multipart>=0.0.9" \
-        "yt-dlp>=2024.0.0" \
+        "yt-dlp[default]>=2024.0.0" \
         "faster-whisper>=1.0.0" \
         "soundfile>=0.12.0" \
         einops huggingface-hub "julius>=0.2.3" "lameenc>=1.2" pyyaml safetensors tqdm
