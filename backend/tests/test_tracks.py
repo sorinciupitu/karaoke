@@ -127,6 +127,22 @@ def test_list_only_own_tracks(env):
     assert len(client.get("/api/tracks").json()) == 2
 
 
+def test_create_tracks_batch(env):
+    client, _ = env
+    login(client, "a")
+
+    r = client.post(
+        "/api/tracks/batch",
+        json={"youtube_urls": ["https://youtu.be/a1", "  ", "https://youtu.be/a2"]},
+        headers=FH,
+    )
+    assert r.status_code == 201
+    body = r.json()
+    assert len(body) == 2  # blank lines are skipped
+    assert {t["youtube_url"] for t in body} == {"https://youtu.be/a1", "https://youtu.be/a2"}
+    assert all(t["status"] == "queued" for t in body)
+
+
 def test_cancel_and_retry(env):
     client, _ = env
     login(client, "a")

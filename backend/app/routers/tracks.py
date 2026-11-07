@@ -13,6 +13,7 @@ from ..schemas import (
     ReprocessIn,
     TrackCreate,
     TrackOut,
+    TracksCreate,
     TrackUpdate,
 )
 
@@ -46,6 +47,29 @@ def create_track(
     db.commit()
     db.refresh(track)
     return track
+
+
+@router.post("/batch", response_model=list[TrackOut], status_code=201)
+def create_tracks(
+    body: TracksCreate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    urls = [u.strip() for u in body.youtube_urls if u and u.strip()]
+    tracks = [
+        Track(
+            user_id=user.id,
+            youtube_url=u,
+            status="queued",
+            language=settings.WHISPER_LANGUAGE,
+        )
+        for u in urls
+    ]
+    db.add_all(tracks)
+    db.commit()
+    for t in tracks:
+        db.refresh(t)
+    return tracks
 
 
 @router.post("/upload", response_model=TrackOut, status_code=201)

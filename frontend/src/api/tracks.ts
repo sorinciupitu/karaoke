@@ -42,6 +42,13 @@ export function createTrack(youtube_url: string): Promise<Track> {
   });
 }
 
+export function createTracks(youtube_urls: string[]): Promise<Track[]> {
+  return api<Track[]>("/api/tracks/batch", {
+    method: "POST",
+    body: JSON.stringify({ youtube_urls }),
+  });
+}
+
 export interface UploadTrackOptions {
   title?: string;
   artist?: string;

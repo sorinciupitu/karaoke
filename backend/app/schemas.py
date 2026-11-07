@@ -20,6 +20,10 @@ class TrackCreate(BaseModel):
     youtube_url: str
 
 
+class TracksCreate(BaseModel):
+    youtube_urls: list[str]
+
+
 class TrackUpdate(BaseModel):
     title: str | None = None
     artist: str | None = None

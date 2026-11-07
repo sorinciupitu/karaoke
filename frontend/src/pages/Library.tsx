@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Flame } from "lucide-react";
 import AddTrackForm from "../components/AddTrackForm";
 import TrackBrowser from "../components/TrackBrowser";
-import { createTrack, deleteTrack, listTracks, type Track } from "../api/tracks";
+import { createTracks, deleteTrack, listTracks, type Track } from "../api/tracks";
 import { useAuth } from "../auth/AuthContext";
 import { usePlayer } from "../player/PlayerContext";
 
@@ -36,9 +36,9 @@ export default function Library() {
     return () => clearInterval(id);
   }, [refresh]);
 
-  const onAdd = async (url: string) => {
-    const t = await createTrack(url);
-    setTracks((prev) => [t, ...prev]);
+  const onAdd = async (urls: string[]) => {
+    const created = await createTracks(urls);
+    setTracks((prev) => [...created, ...prev]);
   };
 
   const onDelete = async (id: number) => {
