@@ -6,7 +6,7 @@ from ..models import Track, UserSettings
 from .download import download, ensure_wav_source
 from .encode import encode_to_m4a
 from .key_detect import detect_key
-from .lyrics import group_words
+from .lyrics import dedupe_lines, group_words
 from .ollama import correct_lines
 from .separate import separate
 from .transcribe import fetch_lrclib, transcribe
@@ -63,7 +63,7 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
                 track.lyrics = track.lyrics or []
             else:
                 words = _transcribe_with_progress(track, db)
-                lines = correct_lines(group_words(words))
+                lines = correct_lines(dedupe_lines(group_words(words)))
                 track.lyrics = _lines_to_json(lines)
                 track.lyrics_source = "whisper"
         elif mode == "resync":
@@ -72,7 +72,7 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
             else:
                 prompt = "\n".join(l["text"] for l in (track.lyrics or [])).strip()
                 words = _transcribe_with_progress(track, db, prompt=prompt)
-                new_lines = group_words(words)
+                new_lines = dedupe_lines(group_words(words))
                 edited = track.lyrics or []
                 if len(new_lines) == len(edited):
                     # preserve the user's edited text, only re-time it
@@ -90,7 +90,7 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
                 track.lyrics_source = "lrclib"
             elif track.vocals_path:
                 words = _transcribe_with_progress(track, db)
-                lines = correct_lines(group_words(words))
+                lines = correct_lines(dedupe_lines(group_words(words)))
                 track.lyrics = _lines_to_json(lines)
                 track.lyrics_source = "whisper"
             else:

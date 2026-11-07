@@ -1,4 +1,4 @@
-from app.pipeline.lyrics import Line, Word, group_words, parse_lrc
+from app.pipeline.lyrics import Line, Word, dedupe_lines, group_words, parse_lrc
 
 
 def test_parse_lrc_basic():
@@ -45,3 +45,19 @@ def test_group_words_splits_on_max_chars():
     lines = group_words(words, max_gap=1.0, max_chars=3)
 
     assert [l.text for l in lines] == ["a b", "c"]
+
+
+def test_dedupe_lines_removes_consecutive_duplicates():
+    lines = [
+        Line("Nu uitați să vă abonați", 0.0, 2.0),
+        Line("Nu uitați să vă abonați", 2.5, 4.5),
+        Line("vers diferit", 5.0, 7.0),
+        Line("Nu uitați să vă abonați", 8.0, 10.0),
+    ]
+    out = dedupe_lines(lines)
+    assert [l.text for l in out] == [
+        "Nu uitați să vă abonați",
+        "vers diferit",
+        "Nu uitați să vă abonați",
+    ]
+    assert out[0].end == 4.5  # merged timing from the duplicate

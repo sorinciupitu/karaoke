@@ -78,3 +78,16 @@ def group_words(
 
     lines.append(close(current))
     return lines
+
+
+def dedupe_lines(lines: list[Line]) -> list[Line]:
+    """Drop consecutive duplicate lines (Whisper repetition hallucination),
+    merging their timing into the first occurrence."""
+    out: list[Line] = []
+    for line in lines:
+        key = line.text.strip().lower()
+        if out and out[-1].text.strip().lower() == key:
+            out[-1].end = max(out[-1].end, line.end)
+            continue
+        out.append(line)
+    return out

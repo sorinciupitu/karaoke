@@ -49,6 +49,7 @@ def transcribe(
         language=language,
         word_timestamps=True,
         initial_prompt=initial_prompt,
+        condition_on_previous_text=False,
     )
 
     words: list[Word] = []
