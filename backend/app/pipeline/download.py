@@ -1,6 +1,9 @@
 import os
 import subprocess
+import time
 from dataclasses import dataclass
+
+from ..config import settings
 
 
 @dataclass
@@ -12,23 +15,52 @@ class DownloadResult:
     youtube_id: str
 
 
+def _ytdlp_opts(media_dir: str) -> dict:
+    opts = {
+        "format": "bestaudio/best",
+        "outtmpl": os.path.join(media_dir, "%(id)s.%(ext)s"),
+        "noplaylist": True,
+        "quiet": True,
+        "no_warnings": True,
+        # A realistic browser UA reduces "video not available" bot-detection
+        # responses from YouTube.
+        "user_agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        ),
+    }
+    cookies = settings.YTDLP_COOKIES_FILE
+    if cookies and os.path.exists(cookies):
+        opts["cookiefile"] = cookies
+    if settings.YTDLP_PROXY:
+        opts["proxy"] = settings.YTDLP_PROXY
+    return opts
+
+
 def download(url: str, media_dir: str) -> DownloadResult:
     import yt_dlp
 
     os.makedirs(media_dir, exist_ok=True)
-    outtmpl = os.path.join(media_dir, "%(id)s.%(ext)s")
-    opts = {
-        "format": "bestaudio/best",
-        "outtmpl": outtmpl,
-        "noplaylist": True,
-        "quiet": True,
-        "no_warnings": True,
-    }
-    with yt_dlp.YoutubeDL(opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        if "entries" in info:
-            info = info["entries"][0]
-        raw_path = ydl.prepare_filename(info)
+    opts = _ytdlp_opts(media_dir)
+
+    # "This video is not available" is sometimes a transient block — retry a
+    # few times before giving up.
+    last_error: Exception | None = None
+    info = None
+    raw_path = None
+    for _attempt in range(3):
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                if "entries" in info:
+                    info = info["entries"][0]
+                raw_path = ydl.prepare_filename(info)
+            break
+        except Exception as e:
+            last_error = e
+            time.sleep(5)
+    if info is None or raw_path is None:
+        raise last_error  # type: ignore[misc]
 
     # Demucs/torchaudio needs PCM WAV; yt-dlp may return webm/opus or m4a,
     # which torchaudio cannot decode. Convert with ffmpeg (already installed).

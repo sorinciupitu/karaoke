@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     OLLAMA_ENABLED: bool = True
     OLLAMA_URL: str = "http://host.docker.internal:11434"
     OLLAMA_MODEL: str = "qwen2.5:7b"
+    YTDLP_COOKIES_FILE: str = "/data/cookies.txt"
+    YTDLP_PROXY: str = ""
     COOKIE_NAME: str = "karaoke_session"
     TOKEN_EXPIRE_DAYS: int = 7
 
