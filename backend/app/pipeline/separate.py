@@ -2,7 +2,7 @@ import os
 from dataclasses import dataclass
 
 from ..config import settings
-from .device import pick_device
+from .device import cuda_state, pick_device
 
 
 @dataclass
@@ -27,11 +27,19 @@ def separate(
     # RoFormer (and Ensemble, which includes it) is a GPU model: on CPU — and
     # especially on ARM64 — it hangs or takes an impractical amount of time.
     # Fail fast with a clear message instead of blocking the worker for hours.
-    if model in (_ROFORMER_MODELS | _ENSEMBLE_MODELS) and pick_device() == "cpu":
-        raise RuntimeError(
-            "RoFormer / Ensemble necesită un GPU NVIDIA; pe CPU nu funcționează "
-            "(se blochează sau durează extrem de mult). Alege alt model (ex. htdemucs)."
-        )
+    if model in (_ROFORMER_MODELS | _ENSEMBLE_MODELS):
+        state = cuda_state()
+        if state == "none":
+            raise RuntimeError(
+                "RoFormer / Ensemble necesită un GPU NVIDIA; pe CPU nu funcționează "
+                "(se blochează sau durează extrem de mult). Alege alt model (ex. htdemucs)."
+            )
+        if state == "full":
+            raise RuntimeError(
+                f"RoFormer / Ensemble au nevoie de GPU, dar GPU-ul are sub "
+                f"{settings.CUDA_MIN_FREE_GB} GB liberi. Oprește procesele care țin "
+                "VRAM-ul (ex. VLLM) și reîncearcă."
+            )
 
     base = os.path.splitext(os.path.basename(original_path))[0]
 

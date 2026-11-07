@@ -2,7 +2,7 @@ import builtins
 import sys
 import types
 
-from app.pipeline.device import pick_device, pick_whisper_compute_type
+from app.pipeline.device import cuda_state, pick_device, pick_whisper_compute_type
 
 
 def _fake_torch(available: bool, free_bytes=10 * 1024**3, total_bytes=12 * 1024**3):
@@ -30,6 +30,18 @@ def test_pick_device_falls_back_to_cpu_when_gpu_full(monkeypatch):
     monkeypatch.setattr("app.config.settings.DEVICE", "auto")
     monkeypatch.setitem(sys.modules, "torch", _fake_torch(True, free_bytes=1 * 1024**3))
     assert pick_device() == "cpu"
+
+
+def test_cuda_state_reports_full_when_low_free(monkeypatch):
+    monkeypatch.setattr("app.config.settings.DEVICE", "auto")
+    monkeypatch.setitem(sys.modules, "torch", _fake_torch(True, free_bytes=1 * 1024**3))
+    assert cuda_state() == "full"
+
+
+def test_cuda_state_reports_none_without_cuda(monkeypatch):
+    monkeypatch.setattr("app.config.settings.DEVICE", "auto")
+    monkeypatch.setitem(sys.modules, "torch", _fake_torch(False))
+    assert cuda_state() == "none"
 
 
 def test_pick_device_falls_back_to_cpu_when_torch_missing(monkeypatch):

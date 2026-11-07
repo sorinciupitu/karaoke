@@ -68,7 +68,7 @@ def test_separate_dispatch_demucs(monkeypatch, tmp_path):
 
 
 def test_separate_dispatch_roformer(monkeypatch, tmp_path):
-    monkeypatch.setattr("app.pipeline.separate.pick_device", lambda: "cuda")
+    monkeypatch.setattr("app.pipeline.separate.cuda_state", lambda: "available")
 
     def fake_roformer(original, out_dir, models_dir):
         i = os.path.join(out_dir, "tmp_i.wav")
@@ -85,7 +85,7 @@ def test_separate_dispatch_roformer(monkeypatch, tmp_path):
 
 
 def test_separate_dispatch_ensemble(monkeypatch, tmp_path):
-    monkeypatch.setattr("app.pipeline.separate.pick_device", lambda: "cuda")
+    monkeypatch.setattr("app.pipeline.separate.cuda_state", lambda: "available")
 
     def fake_ensemble(original, out_dir, models_dir, base):
         return SeparateResult("inst.wav", "voc.wav")
@@ -102,13 +102,13 @@ def test_separate_unknown_model_raises(tmp_path):
 
 
 def test_roformer_blocked_on_cpu(monkeypatch, tmp_path):
-    monkeypatch.setattr("app.pipeline.separate.pick_device", lambda: "cpu")
+    monkeypatch.setattr("app.pipeline.separate.cuda_state", lambda: "none")
     with pytest.raises(RuntimeError, match="GPU"):
         separate("orig.wav", str(tmp_path), str(tmp_path), model_name="roformer")
 
 
 def test_ensemble_blocked_on_cpu(monkeypatch, tmp_path):
-    monkeypatch.setattr("app.pipeline.separate.pick_device", lambda: "cpu")
+    monkeypatch.setattr("app.pipeline.separate.cuda_state", lambda: "none")
     with pytest.raises(RuntimeError, match="GPU"):
         separate("orig.wav", str(tmp_path), str(tmp_path), model_name="ensemble")
 
