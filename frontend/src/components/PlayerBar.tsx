@@ -1,5 +1,4 @@
 import { Mic, MicOff, Pause, Play } from "lucide-react";
-import PitchControl from "./PitchControl";
 import { usePlayer } from "../player/PlayerContext";
 
 export default function PlayerBar({
@@ -65,12 +64,6 @@ export default function PlayerBar({
               )}
             </button>
           </div>
-        </div>
-        <div className="flex items-center justify-between gap-2 border-t border-white/5 px-3 py-1.5">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted">
-            Tonalitate
-          </span>
-          <PitchControl variant="compact" />
         </div>
       </div>
     </div>

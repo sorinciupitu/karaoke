@@ -38,10 +38,9 @@ interface PlayerContextValue {
 
 const Ctx = createContext<PlayerContextValue | null>(null);
 
-// Toată transpunerea se face live în audio graph (AudioWorklet), deci sursa
-// rămâne neschimbată la schimbarea tonalității.
-function srcFor(t: Track, instrumental: boolean) {
-  return `/media/${t.id}/${instrumental ? "instrumental" : "original"}`;
+function srcFor(t: Track, instrumental: boolean, pitch: number) {
+  const base = `/media/${t.id}/${instrumental ? "instrumental" : "original"}`;
+  return pitch !== 0 ? `${base}?pitch=${pitch}` : base;
 }
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
@@ -106,9 +105,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         setCrossfadeEnabledState(s.crossfade_enabled);
         setCrossfadeSecondsState(s.crossfade_seconds);
         // Tonalitatea aleasă se memorează între sesiuni, până e schimbată din nou.
-        const stored = s.pitch ?? 0;
-        setPitch(stored);
-        engine.setPitch(stored);
+        setPitch(s.pitch ?? 0);
       })
       .catch(() => {});
   }, []);
@@ -151,9 +148,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setIndex(0);
       setDuration(t.duration ?? 0);
       setPlaying(true);
-      void engine.play(srcFor(t, instrumental));
+      void engine.play(srcFor(t, instrumental, pitch));
     },
-    [instrumental],
+    [instrumental, pitch],
   );
 
   const playQueue = useCallback(
@@ -164,10 +161,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       if (t) {
         setDuration(t.duration ?? 0);
         setPlaying(true);
-        void engine.play(srcFor(t, instrumental));
+        void engine.play(srcFor(t, instrumental, pitch));
       }
     },
-    [instrumental],
+    [instrumental, pitch],
   );
 
   const next = useCallback(() => {
@@ -182,11 +179,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setIndex(ni);
     setPlaying(true);
     if (crossfadeEnabled) {
-      void engine.crossfadeTo(srcFor(t, instrumental), crossfadeSeconds);
+      void engine.crossfadeTo(srcFor(t, instrumental, pitch), crossfadeSeconds);
     } else {
-      void engine.play(srcFor(t, instrumental));
+      void engine.play(srcFor(t, instrumental, pitch));
     }
-  }, [index, queue, crossfadeEnabled, crossfadeSeconds, instrumental]);
+  }, [index, queue, crossfadeEnabled, crossfadeSeconds, instrumental, pitch]);
 
   const prev = useCallback(() => {
     if (index <= 0) {
@@ -199,8 +196,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setIndex(ni);
     setDuration(t.duration ?? 0);
     setPlaying(true);
-    void engine.play(srcFor(t, instrumental));
-  }, [index, queue, instrumental]);
+    void engine.play(srcFor(t, instrumental, pitch));
+  }, [index, queue, instrumental, pitch]);
 
   const togglePlay = useCallback(() => {
     if (!current) return;
@@ -223,9 +220,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setInstrumental(nv);
     if (current) {
       const time = engine.currentTime;
-      void engine.play(srcFor(current, nv)).then(() => engine.seek(time));
+      void engine.play(srcFor(current, nv, pitch)).then(() => engine.seek(time));
     }
-  }, [instrumental, current]);
+  }, [instrumental, current, pitch]);
 
   const toggleCrossfade = useCallback(() => {
     const nv = !crossfadeEnabled;
@@ -238,14 +235,19 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     void patchSettings({ crossfade_seconds: s }).catch(() => {});
   }, []);
 
-  const changePitch = useCallback((n: number) => {
-    const next = Math.max(-6, Math.min(6, Math.round(n)));
-    setPitch(next);
-    // Transpunerea se aplică live în audio graph: fără reload, fără seek,
-    // fără întrerupere și fără să miște versurile din timeline.
-    engine.setPitch(next);
-    void patchSettings({ pitch: next }).catch(() => {});
-  }, []);
+  const changePitch = useCallback(
+    (n: number) => {
+      setPitch(n);
+      void patchSettings({ pitch: n }).catch(() => {});
+      if (current) {
+        const time = engine.currentTime;
+        void engine.play(srcFor(current, instrumental, n)).then(() =>
+          engine.seek(time),
+        );
+      }
+    },
+    [current, instrumental],
+  );
 
   const nextRef = useRef(next);
   useEffect(() => {
