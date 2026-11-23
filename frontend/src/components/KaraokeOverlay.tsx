@@ -6,11 +6,9 @@ import {
   ListMusic,
   Mic,
   MicOff,
-  Minus,
   Music2,
   Pause,
   Play,
-  Plus,
   Shuffle,
   SkipBack,
   SkipForward,
@@ -20,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { uploadRecording } from "../api/tracks";
+import PitchControl from "./PitchControl";
 import { findActiveLineIndex } from "../audio/lyricsSync";
 import { transposeKey } from "../lib/musicKey";
 import { formatDuration } from "../lib/theme";
@@ -251,66 +250,44 @@ export default function KaraokeOverlay({
           </div>
 
           {/* studio controls */}
-          <div className="relative mt-4 grid grid-cols-3 gap-2 px-5">
-            <div className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-surface p-3">
-              <button
-                onClick={p.toggleInstrumental}
-                className={`flex h-10 w-10 items-center justify-center rounded-full transition-all active:scale-95 ${
-                  p.instrumental
-                    ? "bg-spotlight text-white shadow-[0_0_16px_rgba(247,30,77,0.45)]"
-                    : "bg-surface-3 text-cream"
-                }`}
-                aria-label="Comută vocea"
-                title={p.instrumental ? "Voce oprită" : "Voce activă"}
-              >
-                {p.instrumental ? <MicOff size={18} /> : <Mic size={18} />}
-              </button>
-              <span className="text-[10px] font-semibold uppercase text-muted">
-                Voce
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-surface p-3">
-              <div className="flex items-center gap-1.5">
+          <div className="relative mt-4 space-y-2 px-5">
+            <PitchControl />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center justify-center gap-3 rounded-2xl bg-surface px-3 py-2">
                 <button
-                  onClick={() => p.changePitch(Math.max(-6, p.pitch - 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-cream transition-transform active:scale-90"
-                  aria-label="Scade tonalitatea"
+                  onClick={p.toggleInstrumental}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full transition-all active:scale-95 ${
+                    p.instrumental
+                      ? "bg-spotlight text-white shadow-[0_0_16px_rgba(247,30,77,0.45)]"
+                      : "bg-surface-3 text-cream"
+                  }`}
+                  aria-label="Comută vocea"
+                  title={p.instrumental ? "Voce oprită" : "Voce activă"}
                 >
-                  <Minus size={15} />
+                  {p.instrumental ? <MicOff size={18} /> : <Mic size={18} />}
                 </button>
-                <span className="w-8 text-center text-sm font-bold text-cream">
-                  {p.pitch > 0 ? `+${p.pitch}` : p.pitch}
+                <span className="text-[10px] font-semibold uppercase text-muted">
+                  Voce
                 </span>
-                <button
-                  onClick={() => p.changePitch(Math.min(6, p.pitch + 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-cream transition-transform active:scale-90"
-                  aria-label="Crește tonalitatea"
-                >
-                  <Plus size={15} />
-                </button>
               </div>
-              <span className="text-[10px] font-semibold uppercase text-muted">
-                Tonalitate
-              </span>
-            </div>
 
-            <div className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-surface p-3">
-              <button
-                onClick={p.toggleCrossfade}
-                className={`flex h-10 w-10 items-center justify-center rounded-full transition-all active:scale-95 ${
-                  p.crossfadeEnabled
-                    ? "bg-spotlight/20 text-spotlight"
-                    : "bg-surface-3 text-cream"
-                }`}
-                aria-label="Comută crossfade"
-                title="Crossfade"
-              >
-                <Layers size={18} />
-              </button>
-              <span className="text-[10px] font-semibold uppercase text-muted">
-                Mix
-              </span>
+              <div className="flex items-center justify-center gap-3 rounded-2xl bg-surface px-3 py-2">
+                <button
+                  onClick={p.toggleCrossfade}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full transition-all active:scale-95 ${
+                    p.crossfadeEnabled
+                      ? "bg-spotlight/20 text-spotlight"
+                      : "bg-surface-3 text-cream"
+                  }`}
+                  aria-label="Comută crossfade"
+                  title="Crossfade"
+                >
+                  <Layers size={18} />
+                </button>
+                <span className="text-[10px] font-semibold uppercase text-muted">
+                  Mix
+                </span>
+              </div>
             </div>
           </div>
 

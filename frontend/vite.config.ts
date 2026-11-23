@@ -3,6 +3,9 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react()],
+  // The pitch shifter is registered as an AudioWorklet, which needs a real ES
+  // module (no IIFE wrapper).
+  worker: { format: "es" },
   server: {
     port: 5173,
     proxy: {
