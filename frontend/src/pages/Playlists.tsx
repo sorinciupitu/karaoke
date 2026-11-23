@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Play, Plus, Trash2 } from "lucide-react";
 import PlaylistEditor from "../components/PlaylistEditor";
 import {
@@ -18,6 +19,8 @@ export default function Playlists() {
   const [library, setLibrary] = useState<Track[]>([]);
   const [name, setName] = useState("");
   const { playQueue } = usePlayer();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const paramId = Number(searchParams.get("p")) || 0;
 
   const refresh = useCallback(async () => {
     setPlaylists(await listPlaylists());
@@ -28,7 +31,18 @@ export default function Playlists() {
     void refresh();
   }, [refresh]);
 
-  const open = async (id: number) => setSelected(await getPlaylist(id));
+  // Deschide automat playlist-ul cerut din dashboard (?p=<id>).
+  useEffect(() => {
+    if (!paramId || selected?.id === paramId) return;
+    getPlaylist(paramId)
+      .then(setSelected)
+      .catch(() => {});
+  }, [paramId, selected?.id]);
+
+  const open = async (id: number) => {
+    setSearchParams({ p: String(id) });
+    setSelected(await getPlaylist(id));
+  };
 
   const create = async () => {
     if (!name.trim()) return;
@@ -40,12 +54,23 @@ export default function Playlists() {
 
   const remove = async (id: number) => {
     await deletePlaylist(id);
-    if (selected?.id === id) setSelected(null);
+    if (selected?.id === id) {
+      setSelected(null);
+      setSearchParams({});
+    }
     await refresh();
   };
 
   return (
     <div>
+      <section className="pb-3 pt-2">
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-cream">
+          Playlist-uri
+        </h1>
+        <p className="text-sm text-muted">
+          Creează liste, adaugă piese și ordonează-le pentru sesiunea ta.
+        </p>
+      </section>
 
       <div className="flex gap-2">
         <input

@@ -56,6 +56,8 @@ class TrackOut(BaseModel):
     lyrics: list
     lyrics_source: str | None
     musical_key: str | None
+    bpm: float | None
+    has_recording: bool
     demucs_model: str | None
     needs_separation: bool
     progress: int
@@ -103,6 +105,7 @@ class SettingsOut(BaseModel):
     crossfade_seconds: float
     whisper_model: str
     demucs_model: str
+    pitch: int
 
 
 class SettingsUpdate(BaseModel):
@@ -110,6 +113,7 @@ class SettingsUpdate(BaseModel):
     crossfade_seconds: float | None = None
     whisper_model: str | None = None
     demucs_model: str | None = None
+    pitch: int | None = None
 
 
 class ReprocessIn(BaseModel):

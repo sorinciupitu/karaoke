@@ -51,11 +51,17 @@ class Track(Base):
     lyrics_mode: Mapped[str | None] = mapped_column(String(32), nullable=True)
     error_count: Mapped[int] = mapped_column(Integer, default=0)
     musical_key: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    bpm: Mapped[float | None] = mapped_column(Float, nullable=True)
+    recording_path: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     language: Mapped[str] = mapped_column(String(16), default="ro")
     source: Mapped[str] = mapped_column(String(16), default="youtube")
     needs_separation: Mapped[bool] = mapped_column(Boolean, default=True)
     progress: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+    @property
+    def has_recording(self) -> bool:
+        return bool(self.recording_path)
 
 
 class Playlist(Base):
@@ -85,5 +91,6 @@ class UserSettings(Base):
     crossfade_seconds: Mapped[float] = mapped_column(Float, default=5.0)
     whisper_model: Mapped[str] = mapped_column(String(32), default="medium")
     demucs_model: Mapped[str] = mapped_column(String(32), default="htdemucs")
+    pitch: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)

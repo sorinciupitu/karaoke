@@ -6,7 +6,7 @@ import KaraokeOverlay from "./components/KaraokeOverlay";
 import PlayerBar from "./components/PlayerBar";
 import TopBar from "./components/TopBar";
 import Admin from "./pages/Admin";
-import Library from "./pages/Library";
+import Dashboard from "./pages/Dashboard";
 import LibraryPage from "./pages/LibraryPage";
 import Login from "./pages/Login";
 import Playlists from "./pages/Playlists";
@@ -56,7 +56,7 @@ export default function App() {
                 </RequireAuth>
               }
             >
-              <Route path="/" element={<Library />} />
+              <Route path="/" element={<Dashboard />} />
               <Route path="/library" element={<LibraryPage />} />
               <Route path="/track/:id" element={<TrackDetail />} />
               <Route path="/playlists" element={<Playlists />} />

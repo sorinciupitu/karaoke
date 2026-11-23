@@ -2,7 +2,7 @@ import time
 
 from ..db import SessionLocal
 from ..models import Track
-from ..pipeline.runner import run_lyrics, run_track
+from ..pipeline.runner import fill_track_metadata, run_lyrics, run_track
 
 
 def next_processing_track(session_factory=None) -> Track | None:
@@ -38,6 +38,37 @@ def next_lyrics_track(session_factory=None) -> Track | None:
         db.close()
 
 
+def next_metadata_track(session_factory=None) -> Track | None:
+    """A ready track whose key/BPM were never detected (older tracks)."""
+    factory = session_factory or SessionLocal
+    db = factory()
+    try:
+        return (
+            db.query(Track)
+            .filter(
+                Track.status == "ready",
+                Track.bpm.is_(None),
+                Track.instrumental_path.isnot(None),
+            )
+            .order_by(Track.id)
+            .first()
+        )
+    finally:
+        db.close()
+
+
+def _loop_metadata(poll_interval: float) -> None:
+    while True:
+        try:
+            track = next_metadata_track()
+            if track is not None:
+                fill_track_metadata(track.id)
+                continue
+            time.sleep(poll_interval * 6)
+        except Exception:
+            time.sleep(poll_interval)
+
+
 def _loop_processing(poll_interval: float) -> None:
     while True:
         try:
@@ -69,6 +100,9 @@ def start_worker(poll_interval: float = 5.0) -> None:
 
     threading.Thread(
         target=_loop_lyrics, args=(poll_interval,), daemon=True
+    ).start()
+    threading.Thread(
+        target=_loop_metadata, args=(poll_interval,), daemon=True
     ).start()
     _loop_processing(poll_interval)
 

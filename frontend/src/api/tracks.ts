@@ -20,6 +20,8 @@ export interface Track {
   lyrics: Line[];
   lyrics_source: string | null;
   musical_key: string | null;
+  bpm: number | null;
+  has_recording: boolean;
   demucs_model: string | null;
   needs_separation: boolean;
   progress: number;
@@ -108,4 +110,17 @@ export function reprocessTrack(id: number, model: string): Promise<Track> {
 
 export function retryTrack(id: number): Promise<Track> {
   return api<Track>(`/api/tracks/${id}/retry`, { method: "POST" });
+}
+
+export function uploadRecording(id: number, blob: Blob): Promise<Track> {
+  const fd = new FormData();
+  fd.append("file", blob, "recording.webm");
+  return api<Track>(`/api/tracks/${id}/recording`, {
+    method: "POST",
+    body: fd,
+  });
+}
+
+export function deleteRecording(id: number): Promise<Track> {
+  return api<Track>(`/api/tracks/${id}/recording`, { method: "DELETE" });
 }

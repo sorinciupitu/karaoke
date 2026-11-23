@@ -1,7 +1,9 @@
-import { Check, Play } from "lucide-react";
+import { Check, ListPlus, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Track } from "../api/tracks";
 import { statusLabel } from "../lib/library";
+import { transposeKey } from "../lib/musicKey";
+import { usePlayer } from "../player/PlayerContext";
 import ProgressRing from "./ProgressRing";
 
 const DEMUX_COLOR = "#9b51e0"; // mov — separare voce (Demucs)
@@ -10,6 +12,7 @@ const LYRICS_COLOR = "#eab308"; // galben — transcriere versuri
 interface Props {
   track: Track;
   onPlay: (t: Track) => void;
+  onAddToPlaylist?: (t: Track) => void;
   selectionMode?: boolean;
   selected?: boolean;
 }
@@ -17,10 +20,13 @@ interface Props {
 export default function TrackCard({
   track,
   onPlay,
+  onAddToPlaylist,
   selectionMode,
   selected,
 }: Props) {
+  const { pitch } = usePlayer();
   const ready = track.status === "ready";
+  const decisiveKey = transposeKey(track.musical_key, pitch);
   const failed = track.status === "failed";
   const processing = !ready && !failed;
   const lyricsWorking =
@@ -96,7 +102,41 @@ export default function TrackCard({
         <p className="mt-0.5 truncate text-xs text-muted">
           {statusLabel(track.status, track.lyrics_status)}
         </p>
+        {ready && (track.bpm || decisiveKey) && (
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            {track.bpm ? (
+              <span className="rounded-full bg-surface-3 px-2 py-0.5 text-[10px] font-bold tabular-nums text-cream/80">
+                {Math.round(track.bpm)} BPM
+              </span>
+            ) : null}
+            {decisiveKey && (
+              <span className="rounded-full bg-spotlight/15 px-2 py-0.5 text-[10px] font-bold text-spotlight">
+                {decisiveKey}
+              </span>
+            )}
+            {track.has_recording && (
+              <span className="rounded-full bg-violet/15 px-2 py-0.5 text-[10px] font-bold text-violet">
+                înregistrată
+              </span>
+            )}
+          </div>
+        )}
       </Link>
+
+      {onAddToPlaylist && ready && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onAddToPlaylist(track);
+          }}
+          aria-label="Adaugă în playlist"
+          title="Adaugă în playlist"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-3 hover:text-spotlight"
+        >
+          <ListPlus size={17} />
+        </button>
+      )}
     </div>
   );
 }

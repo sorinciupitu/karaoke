@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  Circle,
   Layers,
   ListMusic,
   Mic,
@@ -14,13 +15,17 @@ import {
   SkipBack,
   SkipForward,
   Sparkles,
+  Square,
   Star,
   X,
 } from "lucide-react";
+import { uploadRecording } from "../api/tracks";
 import { findActiveLineIndex } from "../audio/lyricsSync";
 import { transposeKey } from "../lib/musicKey";
 import { formatDuration } from "../lib/theme";
 import { usePlayer } from "../player/PlayerContext";
+
+type RecordingState = "idle" | "recording" | "saving" | "saved" | "error";
 
 export default function KaraokeOverlay({
   open,
@@ -36,6 +41,11 @@ export default function KaraokeOverlay({
   const nextTrack = p.index >= 0 ? p.queue[p.index + 1] : null;
   const displayedKey = transposeKey(p.current?.musical_key, p.pitch);
 
+  const activeLineRef = useRef<HTMLParagraphElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const [recState, setRecState] = useState<RecordingState>("idle");
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -44,14 +54,59 @@ export default function KaraokeOverlay({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const around = (): number[] => {
-    const idx = active < 0 ? 0 : active;
-    const out: number[] = [];
-    for (let i = idx - 2; i <= idx + 2; i++) {
-      if (i >= 0 && i < lines.length) out.push(i);
+  // Ține versul curent centrat pe măsură ce piesa avansează.
+  useEffect(() => {
+    activeLineRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [active]);
+
+  const startRecording = async () => {
+    if (!p.current) return;
+    try {
+      // Karaoke: versiunea instrumentală, ca vocea ta să se audă peste negativ.
+      if (!p.instrumental) p.toggleInstrumental();
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const trackId = p.current.id;
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunksRef.current, {
+          type: recorder.mimeType || "audio/webm",
+        });
+        if (blob.size === 0) {
+          setRecState("error");
+          return;
+        }
+        setRecState("saving");
+        try {
+          await uploadRecording(trackId, blob);
+          setRecState("saved");
+        } catch {
+          setRecState("error");
+        }
+      };
+      recorder.start();
+      recorderRef.current = recorder;
+      setRecState("recording");
+    } catch {
+      setRecState("error");
     }
-    return out;
   };
+
+  const stopRecording = () => {
+    recorderRef.current?.stop();
+    recorderRef.current = null;
+  };
+
+  useEffect(() => {
+    return () => {
+      // Oprește microfonul dacă overlay-ul e demontat în timpul înregistrării.
+      if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+    };
+  }, []);
 
   return (
     <AnimatePresence>
@@ -101,44 +156,76 @@ export default function KaraokeOverlay({
             )}
           </header>
 
-          {/* lyric teleprompter */}
-          <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-6 py-4">
+          {/* lyric teleprompter — toate versurile, cel curent evidențiat */}
+          <div className="relative flex-1 overflow-hidden">
             {lines.length === 0 ? (
-              <p className="text-center text-muted">
-                Versuri indisponibile pentru această piesă.
-              </p>
-            ) : (
-              <div className="flex w-full max-w-sm flex-col items-center gap-3 text-center">
-                {around().map((i) => {
-                  const isActive = i === active;
-                  return (
-                    <div key={i} className="transition-all duration-300">
-                      {isActive ? (
-                        <div className="relative rounded-2xl bg-surface-2/60 px-5 py-6 backdrop-blur-xl">
-                          <div className="mb-3 flex items-center justify-center gap-1">
-                            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-spotlight" />
-                            <span
-                              className="h-1.5 w-4 rounded-full bg-spotlight"
-                              style={{ animation: "bounce 0.6s infinite 0.2s" }}
-                            />
-                            <span
-                              className="h-1.5 w-2 rounded-full bg-spotlight"
-                              style={{ animation: "bounce 0.8s infinite 0.4s" }}
-                            />
-                          </div>
-                          <p className="font-display text-3xl font-extrabold leading-tight text-spotlight drop-shadow-[0_0_24px_rgba(247,30,77,0.45)]">
-                            {lines[i].text}
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="font-display text-xl font-semibold leading-snug text-cream/25">
-                          {lines[i].text}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
+              <div className="flex h-full items-center justify-center px-6">
+                <p className="text-center text-muted">
+                  Versuri indisponibile pentru această piesă.
+                </p>
               </div>
+            ) : (
+              <div
+                className="h-full overflow-y-auto px-6 py-10"
+                style={{ scrollbarWidth: "none" }}
+              >
+                <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-3 text-center">
+                  {lines.map((line, i) => {
+                    const isActive = i === active;
+                    return (
+                      <p
+                        key={i}
+                        ref={isActive ? activeLineRef : undefined}
+                        className={`font-display leading-snug transition-all duration-300 ${
+                          isActive
+                            ? "scale-105 text-2xl font-extrabold text-spotlight drop-shadow-[0_0_24px_rgba(247,30,77,0.45)]"
+                            : "text-lg font-semibold text-cream/30"
+                        }`}
+                      >
+                        {line.text}
+                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* record your own take over the instrumental */}
+          <div className="relative px-5 pt-1">
+            <button
+              onClick={recState === "recording" ? stopRecording : startRecording}
+              disabled={!p.current || recState === "saving"}
+              className={`flex w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-50 ${
+                recState === "recording"
+                  ? "bg-red-500/20 text-red-400"
+                  : "bg-surface-2 text-cream hover:bg-surface-3"
+              }`}
+            >
+              {recState === "recording" ? (
+                <>
+                  <Square size={14} className="fill-current" />
+                  Oprește înregistrarea
+                </>
+              ) : (
+                <>
+                  <Circle size={12} className="fill-red-500 text-red-500" />
+                  {recState === "saving"
+                    ? "Se salvează înregistrarea…"
+                    : "Cântă și înregistrează-ți vocea"}
+                </>
+              )}
+            </button>
+            {recState === "saved" && (
+              <p className="mt-1.5 text-center text-xs text-emerald-400">
+                Înregistrarea a fost salvată în piesă.
+              </p>
+            )}
+            {recState === "error" && (
+              <p className="mt-1.5 text-center text-xs text-red-400">
+                Microfonul nu e disponibil sau înregistrarea nu a putut fi
+                salvată.
+              </p>
             )}
           </div>
 

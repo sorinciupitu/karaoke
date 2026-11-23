@@ -1,9 +1,45 @@
-import { useMemo, useRef, useState, type TouchEvent } from "react";
-import { Search, Trash2, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
+import { Lock, LockOpen, Search, Trash2, X } from "lucide-react";
 import type { Track } from "../api/tracks";
+import AddToPlaylist from "./AddToPlaylist";
 import TrackCard from "./TrackCard";
 
 type Filter = "toate" | "gata" | "procesare" | "esuate";
+
+type Sort = "recent" | "az" | "za" | "bpm_asc" | "bpm_desc";
+
+const SORTS: { key: Sort; label: string }[] = [
+  { key: "recent", label: "Cele mai recente" },
+  { key: "az", label: "Alfabetic A → Z" },
+  { key: "za", label: "Alfabetic Z → A" },
+  { key: "bpm_asc", label: "BPM crescător" },
+  { key: "bpm_desc", label: "BPM descrescător" },
+];
+
+const SORT_KEY = "karaoke:library-sort";
+const LOCK_KEY = "karaoke:library-sort-locked";
+
+function titleOf(t: Track): string {
+  return (t.title || t.youtube_url || "").toLocaleLowerCase("ro");
+}
+
+function sortTracks(tracks: Track[], sort: Sort): Track[] {
+  const list = [...tracks];
+  if (sort === "az") list.sort((a, b) => titleOf(a).localeCompare(titleOf(b), "ro"));
+  else if (sort === "za")
+    list.sort((a, b) => titleOf(b).localeCompare(titleOf(a), "ro"));
+  else if (sort === "bpm_asc" || sort === "bpm_desc") {
+    const dir = sort === "bpm_asc" ? 1 : -1;
+    list.sort((a, b) => {
+      // tracks without a detected BPM always go last
+      if (a.bpm == null && b.bpm == null) return 0;
+      if (a.bpm == null) return 1;
+      if (b.bpm == null) return -1;
+      return (a.bpm - b.bpm) * dir;
+    });
+  }
+  return list;
+}
 
 const FILTERS: { key: Filter; label: string }[] = [
   { key: "toate", label: "Toate" },
@@ -24,6 +60,7 @@ function TrackItem({
   selectionMode,
   selected,
   onPlay,
+  onAddToPlaylist,
   onToggleSelect,
   onDeleteOne,
 }: {
@@ -31,6 +68,7 @@ function TrackItem({
   selectionMode: boolean;
   selected: boolean;
   onPlay: (t: Track) => void;
+  onAddToPlaylist: (t: Track) => void;
   onToggleSelect: (id: number, force?: boolean) => void;
   onDeleteOne: (id: number) => void;
 }) {
@@ -114,6 +152,7 @@ function TrackItem({
         <TrackCard
           track={track}
           onPlay={onPlay}
+          onAddToPlaylist={onAddToPlaylist}
           selectionMode={selectionMode}
           selected={selected}
         />
@@ -131,6 +170,22 @@ export default function TrackBrowser({
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("toate");
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [addTarget, setAddTarget] = useState<Track | null>(null);
+  const [sort, setSort] = useState<Sort>(() => {
+    const saved = localStorage.getItem(SORT_KEY);
+    return SORTS.some((s) => s.key === saved) ? (saved as Sort) : "recent";
+  });
+  const [sortLocked, setSortLocked] = useState(
+    () => localStorage.getItem(LOCK_KEY) === "1",
+  );
+
+  useEffect(() => {
+    localStorage.setItem(SORT_KEY, sort);
+  }, [sort]);
+
+  useEffect(() => {
+    localStorage.setItem(LOCK_KEY, sortLocked ? "1" : "0");
+  }, [sortLocked]);
 
   const selectionMode = selected.size > 0;
 
@@ -150,6 +205,8 @@ export default function TrackBrowser({
     }
     return list;
   }, [tracks, filter, query]);
+
+  const sorted = useMemo(() => sortTracks(filtered, sort), [filtered, sort]);
 
   const toggleSelect = (id: number, force?: boolean) => {
     setSelected((prev) => {
@@ -203,6 +260,38 @@ export default function TrackBrowser({
         ))}
       </div>
 
+      <div className="mt-1 flex items-center gap-2">
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as Sort)}
+          disabled={sortLocked}
+          aria-label="Sortează piesele"
+          className="min-w-0 flex-1 rounded-full border border-white/10 bg-surface px-3 py-2 text-xs font-semibold text-cream outline-none transition-colors focus:border-spotlight/60 disabled:cursor-not-allowed disabled:text-muted"
+        >
+          {SORTS.map((s) => (
+            <option key={s.key} value={s.key}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={() => setSortLocked((v) => !v)}
+          aria-label={sortLocked ? "Deblochează sortarea" : "Blochează sortarea"}
+          title={
+            sortLocked
+              ? "Sortarea e blocată — apasă pentru a o debloca"
+              : "Blochează sortarea"
+          }
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors ${
+            sortLocked
+              ? "border-spotlight/60 bg-spotlight/15 text-spotlight"
+              : "border-white/10 text-muted hover:text-cream"
+          }`}
+        >
+          {sortLocked ? <Lock size={15} /> : <LockOpen size={15} />}
+        </button>
+      </div>
+
       {selectionMode && (
         <div className="mt-3 flex items-center justify-between rounded-xl bg-surface-2 px-3 py-2">
           <span className="text-sm font-semibold text-cream">
@@ -237,19 +326,22 @@ export default function TrackBrowser({
               : "Nicio piesă nu corespunde filtrului."}
           </p>
         ) : (
-          filtered.map((t) => (
+          sorted.map((t) => (
             <TrackItem
               key={t.id}
               track={t}
               selectionMode={selectionMode}
               selected={selected.has(t.id)}
               onPlay={onPlay}
+              onAddToPlaylist={setAddTarget}
               onToggleSelect={toggleSelect}
               onDeleteOne={onDelete}
             />
           ))
         )}
       </div>
+
+      <AddToPlaylist track={addTarget} onClose={() => setAddTarget(null)} />
     </div>
   );
 }

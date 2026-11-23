@@ -104,6 +104,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       .then((s) => {
         setCrossfadeEnabledState(s.crossfade_enabled);
         setCrossfadeSecondsState(s.crossfade_seconds);
+        // Tonalitatea aleasă se memorează între sesiuni, până e schimbată din nou.
+        setPitch(s.pitch ?? 0);
       })
       .catch(() => {});
   }, []);
@@ -140,13 +142,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     };
   }, [current?.id, current?.lyrics_status, index]);
 
-  const playTrack = useCallback((t: Track) => {
-    setQueue([t]);
-    setIndex(0);
-    setDuration(t.duration ?? 0);
-    setPlaying(true);
-    void engine.play(srcFor(t, true, 0));
-  }, []);
+  const playTrack = useCallback(
+    (t: Track) => {
+      setQueue([t]);
+      setIndex(0);
+      setDuration(t.duration ?? 0);
+      setPlaying(true);
+      void engine.play(srcFor(t, instrumental, pitch));
+    },
+    [instrumental, pitch],
+  );
 
   const playQueue = useCallback(
     (tracks: Track[], startIndex: number) => {
@@ -233,6 +238,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const changePitch = useCallback(
     (n: number) => {
       setPitch(n);
+      void patchSettings({ pitch: n }).catch(() => {});
       if (current) {
         const time = engine.currentTime;
         void engine.play(srcFor(current, instrumental, n)).then(() =>

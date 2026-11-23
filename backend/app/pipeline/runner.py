@@ -5,7 +5,7 @@ from ..db import SessionLocal
 from ..models import Track, UserSettings
 from .download import download, ensure_wav_source
 from .encode import encode_to_m4a
-from .key_detect import detect_key
+from .key_detect import detect_bpm, detect_key
 from .lyrics import dedupe_lines, group_words
 from .ollama import correct_lines
 from .separate import separate
@@ -105,6 +105,25 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
     db.commit()
 
 
+def fill_track_metadata(track_id: int, session_factory=None) -> None:
+    """Backfill musical key / BPM for tracks processed before they were stored."""
+    factory = session_factory or SessionLocal
+    db = factory()
+    try:
+        track = db.get(Track, track_id)
+        if track is None or not track.instrumental_path:
+            return
+        if track.musical_key is None:
+            track.musical_key = detect_key(track.instrumental_path)
+        if track.bpm is None:
+            track.bpm = detect_bpm(track.instrumental_path)
+        db.commit()
+    except Exception:
+        pass
+    finally:
+        db.close()
+
+
 def run_lyrics(track_id: int, mode: str | None = None, session_factory=None) -> None:
     factory = session_factory or SessionLocal
     db = factory()
@@ -185,10 +204,16 @@ def run_track(track_id: int, session_factory=None) -> None:
             track.progress = 60
             db.commit()
 
-        # 2.5 detect the musical key from the instrumental
+        # 2.5 detect the musical key and tempo from the instrumental
         if track.musical_key is None and track.instrumental_path:
             try:
                 track.musical_key = detect_key(track.instrumental_path)
+                db.commit()
+            except Exception:
+                pass
+        if track.bpm is None and track.instrumental_path:
+            try:
+                track.bpm = detect_bpm(track.instrumental_path)
                 db.commit()
             except Exception:
                 pass

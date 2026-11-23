@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, Pencil, Play, RefreshCw } from "lucide-react";
 import {
+  deleteRecording,
   getTrack,
   refetchLyrics,
   reprocessTrack,
@@ -14,6 +15,7 @@ import LyricsEditor from "../components/LyricsEditor";
 import LyricsView from "../components/LyricsView";
 import { DEMUCS_MODELS } from "../lib/demucs";
 import { statusLabel } from "../lib/library";
+import { transposeKey } from "../lib/musicKey";
 import { usePlayer } from "../player/PlayerContext";
 
 function ReprocessSection({
@@ -144,7 +146,7 @@ export default function TrackDetail() {
   const trackId = Number(id);
   const [track, setTrack] = useState<Track | null>(null);
   const [editing, setEditing] = useState(false);
-  const { playTrack, current } = usePlayer();
+  const { playTrack, current, pitch } = usePlayer();
 
   const refresh = useCallback(async () => {
     try {
@@ -184,6 +186,12 @@ export default function TrackDetail() {
     await refresh();
   };
 
+  const removeRecording = async () => {
+    if (!window.confirm("Ștergi înregistrarea vocală a acestei piese?")) return;
+    await deleteRecording(trackId);
+    await refresh();
+  };
+
   return (
     <div>
       <header className="flex items-center gap-3 py-6">
@@ -212,6 +220,21 @@ export default function TrackDetail() {
           </button>
         )}
       </header>
+
+      {(track.bpm || track.musical_key) && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          {track.bpm ? (
+            <span className="rounded-full bg-surface-3 px-3 py-1 text-xs font-bold tabular-nums text-cream/80">
+              {Math.round(track.bpm)} BPM
+            </span>
+          ) : null}
+          {track.musical_key && (
+            <span className="rounded-full bg-spotlight/15 px-3 py-1 text-xs font-bold text-spotlight">
+              {transposeKey(track.musical_key, pitch)}
+            </span>
+          )}
+        </div>
+      )}
 
       {track.error && (
         <p className="mb-2 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">
@@ -257,6 +280,26 @@ export default function TrackDetail() {
             „Reîncearcă transcrierea”.
           </p>
         ))}
+
+      {track.has_recording && (
+        <div className="mt-6 rounded-xl border border-white/5 bg-surface p-4">
+          <p className="text-sm font-medium text-cream">Înregistrarea ta</p>
+          <p className="text-xs text-muted">
+            Vocea ta peste instrumental, salvată în aplicație.
+          </p>
+          <audio
+            controls
+            src={`/media/${track.id}/recording`}
+            className="mt-3 w-full"
+          />
+          <button
+            onClick={removeRecording}
+            className="mt-2 text-xs font-semibold text-muted transition-colors hover:text-red-400"
+          >
+            Șterge înregistrarea
+          </button>
+        </div>
+      )}
 
       <div className="mt-8 border-t border-white/10 pt-4">
         <button

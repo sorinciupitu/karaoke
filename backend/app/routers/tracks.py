@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session
@@ -158,7 +159,12 @@ def delete_track(
     user: User = Depends(get_current_user),
 ):
     track = _own_track(db, track_id, user)
-    paths = [track.instrumental_path, track.original_path, track.vocals_path]
+    paths = [
+        track.instrumental_path,
+        track.original_path,
+        track.vocals_path,
+        track.recording_path,
+    ]
     db.query(PlaylistTrack).filter(PlaylistTrack.track_id == track.id).delete(
         synchronize_session=False
     )
@@ -230,6 +236,64 @@ def reprocess_track(
     track.error = None
     db.commit()
     db.refresh(track)
+    return track
+
+
+_RECORDING_EXT = {
+    "audio/webm": ".webm",
+    "video/webm": ".webm",
+    "audio/ogg": ".ogg",
+    "audio/mp4": ".m4a",
+    "audio/wav": ".wav",
+}
+
+
+@router.post("/{track_id}/recording", response_model=TrackOut)
+def save_recording(
+    track_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Store the user's own vocal take recorded over the instrumental."""
+    track = _own_track(db, track_id, user)
+    content_type = (file.content_type or "").split(";")[0].strip().lower()
+    ext = _RECORDING_EXT.get(content_type, ".webm")
+
+    os.makedirs(settings.MEDIA_DIR, exist_ok=True)
+    dest = os.path.join(settings.MEDIA_DIR, f"track_{track.id}_recording{ext}")
+    old = track.recording_path
+    with open(dest, "wb") as out:
+        shutil.copyfileobj(file.file, out)
+
+    track.recording_path = dest
+    db.commit()
+    db.refresh(track)
+
+    if old and os.path.abspath(old) != os.path.abspath(dest) and os.path.exists(old):
+        try:
+            os.remove(old)
+        except OSError:
+            pass
+    return track
+
+
+@router.delete("/{track_id}/recording", response_model=TrackOut)
+def delete_recording(
+    track_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    track = _own_track(db, track_id, user)
+    path = track.recording_path
+    track.recording_path = None
+    db.commit()
+    db.refresh(track)
+    if path and os.path.exists(path):
+        try:
+            os.remove(path)
+        except OSError:
+            pass
     return track
 
 

@@ -1,22 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
-import { ListMusic, Play } from "lucide-react";
+import AddTrackForm from "../components/AddTrackForm";
 import TrackBrowser from "../components/TrackBrowser";
 import UploadTrack from "../components/UploadTrack";
-import { getPlaylist, listPlaylists, type Playlist } from "../api/playlists";
-import { deleteTrack, listTracks, type Track } from "../api/tracks";
+import { createTracks, deleteTrack, listTracks, type Track } from "../api/tracks";
 import { usePlayer } from "../player/PlayerContext";
 
 export default function LibraryPage() {
-  const { playQueue } = usePlayer();
+  const { playQueue, instrumental, toggleInstrumental } = usePlayer();
   const [tracks, setTracks] = useState<Track[]>([]);
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     try {
-      const [t, p] = await Promise.all([listTracks(), listPlaylists()]);
-      setTracks(t);
-      setPlaylists(p);
+      setTracks(await listTracks());
     } catch {
       // keep last
     } finally {
@@ -25,10 +21,15 @@ export default function LibraryPage() {
   }, []);
 
   useEffect(() => {
-    refresh();
+    void refresh();
     const id = setInterval(refresh, 4000);
     return () => clearInterval(id);
   }, [refresh]);
+
+  const onAdd = async (urls: string[]) => {
+    const created = await createTracks(urls);
+    setTracks((prev) => [...created, ...prev]);
+  };
 
   const onDelete = async (id: number) => {
     setTracks((prev) => prev.filter((t) => t.id !== id));
@@ -41,11 +42,6 @@ export default function LibraryPage() {
     playQueue(ready, Math.max(0, idx));
   };
 
-  const playPlaylist = async (id: number) => {
-    const detail = await getPlaylist(id);
-    if (detail.tracks.length) playQueue(detail.tracks, 0);
-  };
-
   const readyTracks = tracks.filter((t) => t.status === "ready");
 
   return (
@@ -56,48 +52,35 @@ export default function LibraryPage() {
             Biblioteca Ta
           </h1>
           <p className="text-sm text-muted">
-            {tracks.length} piese • {playlists.length} playlist-uri
+            {tracks.length} piese · {readyTracks.length} gata de cântat
           </p>
         </div>
       </section>
 
+      <AddTrackForm onSubmit={onAdd} />
       <UploadTrack onUploaded={refresh} />
 
-      {/* pinned cards */}
-      <div className="mt-4 grid grid-cols-2 gap-2.5">
+      {readyTracks.length > 0 && (
         <button
-          onClick={() => readyTracks.length && playQueue(readyTracks, 0)}
-          className="flex flex-col justify-between rounded-2xl bg-surface p-3 text-left transition-all active:scale-[0.98]"
+          onClick={toggleInstrumental}
+          className="mt-3 flex w-full items-center justify-between rounded-2xl bg-surface px-4 py-3 shadow-md"
         >
-          <div className="flex items-start justify-between">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-spotlight/40 to-violet/40 text-white">
-              <ListMusic size={20} />
-            </div>
-          </div>
-          <div className="pt-3">
-            <p className="truncate text-sm font-bold text-cream">Toate piesele</p>
-            <p className="text-xs text-muted">{readyTracks.length} gata de cântat</p>
-          </div>
-        </button>
-
-        {playlists.map((pl) => (
-          <button
-            key={pl.id}
-            onClick={() => playPlaylist(pl.id)}
-            className="flex flex-col justify-between rounded-2xl bg-surface p-3 text-left transition-all active:scale-[0.98]"
+          <span className="text-sm font-semibold text-cream">
+            {instrumental ? "Instrumental • Karaoke" : "Voce originală"}
+          </span>
+          <span
+            className={`h-5 w-10 rounded-full p-0.5 transition-colors ${
+              instrumental ? "bg-spotlight" : "bg-surface-3"
+            }`}
           >
-            <div className="flex items-start justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-3 text-spotlight">
-                <Play size={18} />
-              </div>
-            </div>
-            <div className="pt-3">
-              <p className="truncate text-sm font-bold text-cream">{pl.name}</p>
-              <p className="text-xs text-muted">Playlist</p>
-            </div>
-          </button>
-        ))}
-      </div>
+            <span
+              className={`block h-4 w-4 rounded-full bg-white transition-transform ${
+                instrumental ? "translate-x-5" : ""
+              }`}
+            />
+          </span>
+        </button>
+      )}
 
       <section className="mt-5">
         <div className="mb-2 flex items-center justify-between px-1">

@@ -16,6 +16,10 @@ def _media_type(path: str) -> str:
         return "audio/wav"
     if ext in (".mp3",):
         return "audio/mpeg"
+    if ext in (".webm",):
+        return "audio/webm"
+    if ext in (".ogg", ".opus"):
+        return "audio/ogg"
     return "application/octet-stream"
 
 

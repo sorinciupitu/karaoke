@@ -12,6 +12,7 @@ _STREAMS = {
     "instrumental": "instrumental_path",
     "original": "original_path",
     "vocals": "vocals_path",
+    "recording": "recording_path",
 }
 
 
