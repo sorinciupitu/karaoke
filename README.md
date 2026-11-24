@@ -53,10 +53,12 @@ Fiecare cont are **biblioteca și playlisturile lui proprii**, complet izolate.
 1. **Bibliotecă** → lipești un link YouTube.
 2. Aplicația descarcă audio-ul și separă vocea (Demucs). Piesa
    devine **redabilă imediat**, chiar înainte de versuri.
-3. În fundal caută versurile originale (LRCLIB); dacă nu le găsește, le
-   transcrie cu AI (Whisper `large-v3`, doar pe voce) și, opțional, le
-   corectează ortografia/diacriticele printr-un LLM local (Ollama). Versurile
-   **apar singure** când sunt gata.
+3. În fundal caută versurile originale — întâi prin **LyricsPlus** (versuri
+   oficiale sincronizate din Apple Music / QQ Music, cu sincronizare pe cuvânt),
+   apoi prin **LRCLIB** (căutare fuzzy, potrivită după titlu, artist și durată).
+   Dacă nu găsește nicio potrivire plauzibilă, le transcrie cu AI (Whisper
+   `large-v3`, doar pe voce) și le curăță de halucinații. Versurile **apar
+   singure** când sunt gata, iar sub ele scrie de unde provin.
 4. **Editează versurile** → corectezi textul, adaugi/ștergi versuri, ajustezi
    momentele; „Re-sincronizează" realiniază textul cu vocea.
 5. **Playlisturi** → ordonezi piesele prin drag-and-drop; butonul **Crossfade**
@@ -74,10 +76,41 @@ Fiecare cont are **biblioteca și playlisturile lui proprii**, complet izolate.
 | `DEVICE` | `auto` | Dispozitiv de calcul: `auto` / `cuda` / `cpu` |
 | `WHISPER_COMPUTE_TYPE` | `auto` | Precizia Whisper: `auto` / `float16` / `int8_float16` / `int8` |
 | `DEMUCS_MODEL` | `htdemucs` | Modelul implicit de separare a vocii (`htdemucs` / `htdemucs_ft` / `roformer` / `ensemble`) — schimbabil și din **Setări** |
+| `LYRICS_PROVIDERS` | `lyricsplus,lrclib` | Sursele de versuri încercate, în ordine (transcrierea AI e fallback) |
+| `LYRICSPLUS_URLS` | mirror public | Instanțe LyricsPlus, separate prin virgulă |
+| `LYRICSPLUS_SOURCES` | `apple,qq` | Providerii upstream folosiți de LyricsPlus |
+| `LYRICSPLUS_TIMEOUT` | `10.0` | Timeout (secunde) per cerere LyricsPlus |
 | `OLLAMA_ENABLED` | `true` | Corectează versurile printr-un LLM local (Ollama) |
 | `OLLAMA_URL` | `http://host.docker.internal:11434` | Adresa Ollama |
 | `OLLAMA_MODEL` | `qwen2.5:7b` | Modelul Ollama folosit la corectare |
 | `TORCH` | `cpu` | Varianta PyTorch: `cpu` / `cuda` (setată automat de install.sh) |
+
+### De unde vin versurile
+
+Ordinea o stabilește `LYRICS_PROVIDERS` (implicit `lyricsplus,lrclib`):
+
+1. **LyricsPlus** — agregator open-source ([ibratabian17/lyricsplus](https://github.com/ibratabian17/lyricsplus))
+   care aduce versuri sincronizate la nivel de cuvânt din Apple Music, QQ Music,
+   Spotify, Deezer și Musixmatch. Aplicația folosește mirror-urile publice
+   (fără cont, fără chei); le poți schimba din `LYRICSPLUS_URLS`.
+2. **LRCLIB** — bază comunitară de fișiere LRC, căutată fuzzy și potrivită după
+   titlu + artist + durată (o potrivire pentru altă versiune a piesei e
+   ignorată).
+3. **Whisper** — doar dacă nu există versuri publicate: transcriere din stem-ul
+   vocal, cu detecție de voce (fără halucinații pe pauze) și diacritice românești.
+
+Titlul și artistul primite de la YouTube sunt curățate înainte de căutare
+(„(Videoclip Oficial)”, „[Official Video]”, „feat.”, canale „- Topic”/VEVO), iar
+„Artist - Titlu” e împărțit automat — altfel aproape nicio piesă nu se potrivea.
+
+Dacă vrei să nu depinzi de mirror-urile publice, poți rula LyricsPlus local:
+
+```bash
+git clone https://github.com/ibratabian17/lyricsplus && cd lyricsplus
+docker compose up -d --build   # http://localhost:3000
+```
+
+apoi setează `LYRICSPLUS_URLS=http://host.docker.internal:3000` în `.env`.
 
 ### Corectarea versurilor cu Ollama (opțional)
 

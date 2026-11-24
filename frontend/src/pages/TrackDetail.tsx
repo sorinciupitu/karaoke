@@ -14,7 +14,7 @@ import {
 import LyricsEditor from "../components/LyricsEditor";
 import LyricsView from "../components/LyricsView";
 import { DEMUCS_MODELS } from "../lib/demucs";
-import { statusLabel } from "../lib/library";
+import { lyricsSourceLabel, statusLabel } from "../lib/library";
 import { transposeKey } from "../lib/musicKey";
 import { usePlayer } from "../player/PlayerContext";
 
@@ -263,6 +263,9 @@ export default function TrackDetail() {
 
       {ready && track.lyrics.length > 0 && (
         <div className="my-8">
+          <p className="mb-2 text-xs uppercase tracking-wide text-muted">
+            {lyricsSourceLabel(track.lyrics_source)}
+          </p>
           <LyricsView lines={track.lyrics} live={isCurrent} />
         </div>
       )}

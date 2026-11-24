@@ -19,6 +19,10 @@ services:
       CUDA_MIN_FREE_GB: ${CUDA_MIN_FREE_GB:-4.0}
       WHISPER_COMPUTE_TYPE: ${WHISPER_COMPUTE_TYPE:-auto}
       DEMUCS_MODEL: ${DEMUCS_MODEL:-htdemucs}
+      LYRICS_PROVIDERS: ${LYRICS_PROVIDERS:-lyricsplus,lrclib}
+      LYRICSPLUS_URLS: ${LYRICSPLUS_URLS:-https://lyricsplus.prjktla.my.id,https://lyricsplus.binimum.org}
+      LYRICSPLUS_SOURCES: ${LYRICSPLUS_SOURCES:-apple,qq}
+      LYRICSPLUS_TIMEOUT: ${LYRICSPLUS_TIMEOUT:-10.0}
       OLLAMA_ENABLED: ${OLLAMA_ENABLED:-true}
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}

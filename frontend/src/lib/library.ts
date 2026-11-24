@@ -20,3 +20,11 @@ export function statusTone(status: string): string {
   if (status === "failed") return "text-red-400";
   return "text-spotlight";
 }
+
+/** Vocabulary-friendly label for where the lyrics came from. */
+export function lyricsSourceLabel(source: string | null): string {
+  if (source === "lyricsplus") return "versuri oficiale (Apple / QQ Music via LyricsPlus)";
+  if (source === "lrclib") return "versuri sincronizate (LRCLIB)";
+  if (source === "whisper") return "transcriere AI — verifică textul";
+  return "versuri";
+}
