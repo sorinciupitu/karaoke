@@ -6,10 +6,11 @@ from ..models import Track, UserSettings
 from .download import download, ensure_wav_source
 from .encode import encode_to_m4a
 from .key_detect import detect_bpm, detect_key
-from .lyrics import dedupe_lines, group_words
+from .lyrics import dedupe_lines, drop_junk_lines, group_words
 from .ollama import correct_lines
 from .separate import separate
-from .transcribe import fetch_lrclib, transcribe
+from .sources import fetch_synced_lyrics
+from .transcribe import transcribe
 
 
 def _lines_to_json(lines) -> list[dict]:
@@ -63,7 +64,7 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
                 track.lyrics = track.lyrics or []
             else:
                 words = _transcribe_with_progress(track, db)
-                lines = correct_lines(dedupe_lines(group_words(words)))
+                lines = drop_junk_lines(correct_lines(dedupe_lines(group_words(words))))
                 track.lyrics = _lines_to_json(lines)
                 track.lyrics_source = "whisper"
         elif mode == "resync":
@@ -72,7 +73,7 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
             else:
                 prompt = "\n".join(l["text"] for l in (track.lyrics or [])).strip()
                 words = _transcribe_with_progress(track, db, prompt=prompt)
-                new_lines = dedupe_lines(group_words(words))
+                new_lines = drop_junk_lines(dedupe_lines(group_words(words)))
                 edited = track.lyrics or []
                 if len(new_lines) == len(edited):
                     # preserve the user's edited text, only re-time it
@@ -83,14 +84,16 @@ def _apply_lyrics(track: Track, db, mode: str) -> None:
                 else:
                     track.lyrics = _lines_to_json(new_lines)
                 track.lyrics_source = track.lyrics_source or "whisper"
-        else:  # "auto": LRCLIB first, whisper fallback
-            lines = fetch_lrclib(track.title, track.artist, track.duration or 0.0)
-            if lines:
-                track.lyrics = _lines_to_json(lines)
-                track.lyrics_source = "lrclib"
+        else:  # "auto": real lyrics first, AI transcription as fallback
+            hit = fetch_synced_lyrics(
+                track.title, track.artist, track.duration or 0.0
+            )
+            if hit is not None:
+                track.lyrics = _lines_to_json(hit.lines)
+                track.lyrics_source = hit.source
             elif track.vocals_path:
                 words = _transcribe_with_progress(track, db)
-                lines = correct_lines(dedupe_lines(group_words(words)))
+                lines = drop_junk_lines(correct_lines(dedupe_lines(group_words(words))))
                 track.lyrics = _lines_to_json(lines)
                 track.lyrics_source = "whisper"
             else:

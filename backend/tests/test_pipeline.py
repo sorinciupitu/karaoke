@@ -9,6 +9,7 @@ from app.pipeline.download import DownloadResult
 from app.pipeline.lyrics import Line, Word
 from app.pipeline.runner import run_lyrics, run_track
 from app.pipeline.separate import SeparateResult
+from app.pipeline.sources import LyricsHit
 
 
 @pytest.fixture()
@@ -92,8 +93,8 @@ def test_run_lyrics_auto_uses_lrclib(session_factory, monkeypatch):
     tid = _make_ready_track(Session)
 
     monkeypatch.setattr(
-        "app.pipeline.runner.fetch_lrclib",
-        lambda title, artist, dur: [Line("vers", 0.0, 3.0)],
+        "app.pipeline.runner.fetch_synced_lyrics",
+        lambda title, artist, dur: LyricsHit([Line("vers", 0.0, 3.0)], "lrclib"),
     )
     monkeypatch.setattr("app.pipeline.runner.correct_lines", lambda lines: lines)
 
@@ -111,7 +112,7 @@ def test_run_lyrics_auto_falls_back_to_whisper(session_factory, monkeypatch):
     Session = session_factory
     tid = _make_ready_track(Session)
 
-    monkeypatch.setattr("app.pipeline.runner.fetch_lrclib", lambda t, a, d: None)
+    monkeypatch.setattr("app.pipeline.runner.fetch_synced_lyrics", lambda t, a, d: None)
     monkeypatch.setattr(
         "app.pipeline.runner.transcribe",
         lambda v, l, m, md, initial_prompt=None, progress_cb=None: [Word(0.0, 0.5, "hai"), Word(0.6, 1.0, "tu")],
@@ -132,7 +133,7 @@ def test_run_lyrics_corrects_with_ollama(session_factory, monkeypatch):
     Session = session_factory
     tid = _make_ready_track(Session)
 
-    monkeypatch.setattr("app.pipeline.runner.fetch_lrclib", lambda t, a, d: None)
+    monkeypatch.setattr("app.pipeline.runner.fetch_synced_lyrics", lambda t, a, d: None)
     monkeypatch.setattr(
         "app.pipeline.runner.transcribe",
         lambda v, l, m, md, initial_prompt=None, progress_cb=None: [Word(0.0, 0.5, "hai"), Word(0.6, 1.0, "tu")],
@@ -159,7 +160,7 @@ def test_run_lyrics_failure_sets_failed_status(session_factory, monkeypatch):
     Session = session_factory
     tid = _make_ready_track(Session)
 
-    monkeypatch.setattr("app.pipeline.runner.fetch_lrclib", lambda t, a, d: None)
+    monkeypatch.setattr("app.pipeline.runner.fetch_synced_lyrics", lambda t, a, d: None)
 
     def boom(v, l, m, md, initial_prompt=None, progress_cb=None):
         raise RuntimeError("whisper failed")
@@ -247,8 +248,8 @@ def test_run_lyrics_sets_progress_100_when_ready(session_factory, monkeypatch):
     tid = _make_ready_track(Session)
 
     monkeypatch.setattr(
-        "app.pipeline.runner.fetch_lrclib",
-        lambda t, a, d: [Line("vers", 0.0, 3.0)],
+        "app.pipeline.runner.fetch_synced_lyrics",
+        lambda t, a, d: LyricsHit([Line("vers", 0.0, 3.0)], "lrclib"),
     )
     monkeypatch.setattr("app.pipeline.runner.correct_lines", lambda lines: lines)
 

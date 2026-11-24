@@ -15,6 +15,14 @@ class Settings(BaseSettings):
     CUDA_MIN_FREE_GB: float = 4.0  # sub acest prag de memorie GPU liberă, trecem pe CPU
     WHISPER_COMPUTE_TYPE: str = "auto"  # auto | float16 | int8_float16 | int8
     DEMUCS_MODEL: str = "htdemucs"
+    # Versuri: providerii încercaţi, în ordine (lyricsplus, lrclib). Transcrierea
+    # AI rămâne fallback când niciunul nu găseşte piesa.
+    LYRICS_PROVIDERS: str = "lyricsplus,lrclib"
+    LYRICSPLUS_URLS: str = (
+        "https://lyricsplus.prjktla.my.id,https://lyricsplus.binimum.org"
+    )
+    LYRICSPLUS_SOURCES: str = "apple,qq"
+    LYRICSPLUS_TIMEOUT: float = 10.0
     OLLAMA_ENABLED: bool = True
     OLLAMA_URL: str = "http://host.docker.internal:11434"
     OLLAMA_MODEL: str = "qwen2.5:7b"

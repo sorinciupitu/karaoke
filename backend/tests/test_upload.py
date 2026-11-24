@@ -162,7 +162,7 @@ def test_lyrics_instrumental_without_match_stays_empty(session_factory, monkeypa
         artist="",
     )
 
-    monkeypatch.setattr("app.pipeline.runner.fetch_lrclib", lambda t, a, d: [])
+    monkeypatch.setattr("app.pipeline.runner.fetch_synced_lyrics", lambda t, a, d: None)
 
     def boom(*a, **k):
         raise AssertionError("transcribe must not run without vocals")

@@ -13,6 +13,7 @@ from app.pipeline.download import DownloadResult
 from app.pipeline.lyrics import Line, Word
 from app.pipeline.runner import run_lyrics, run_track
 from app.pipeline.separate import SeparateResult
+from app.pipeline.sources import LyricsHit
 
 FH = {"X-Requested-With": "fetch"}
 
@@ -131,7 +132,10 @@ def test_encode_partial_failure_is_atomic(session_factory, monkeypatch):
     monkeypatch.setattr(
         "app.pipeline.runner.ensure_wav_source", lambda sp, op: sp or op or "orig.wav"
     )
-    monkeypatch.setattr("app.pipeline.runner.fetch_lrclib", lambda t, a, d: [Line("v", 0.0, 1.0)])
+    monkeypatch.setattr(
+        "app.pipeline.runner.fetch_synced_lyrics",
+        lambda t, a, d: LyricsHit([Line("v", 0.0, 1.0)], "lrclib"),
+    )
 
     calls = {"n": 0}
 
@@ -168,7 +172,10 @@ def test_encode_bounded_retry_marks_failed(session_factory, monkeypatch):
     monkeypatch.setattr(
         "app.pipeline.runner.ensure_wav_source", lambda sp, op: sp or op or "orig.wav"
     )
-    monkeypatch.setattr("app.pipeline.runner.fetch_lrclib", lambda t, a, d: [Line("v", 0.0, 1.0)])
+    monkeypatch.setattr(
+        "app.pipeline.runner.fetch_synced_lyrics",
+        lambda t, a, d: LyricsHit([Line("v", 0.0, 1.0)], "lrclib"),
+    )
 
     def always_boom(wav, out):
         raise RuntimeError("boom")

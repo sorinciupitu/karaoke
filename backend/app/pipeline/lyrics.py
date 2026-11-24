@@ -70,7 +70,12 @@ def group_words(
     for w in words[1:]:
         prev = current[-1]
         current_text = " ".join(x.text for x in current)
-        if w.start - prev.end > max_gap or len(current_text) + 1 + len(w.text) > max_chars:
+        ends_sentence = prev.text.rstrip()[-1] in ".?!…"
+        if (
+            w.start - prev.end > max_gap
+            or ends_sentence
+            or len(current_text) + 1 + len(w.text) > max_chars
+        ):
             lines.append(close(current))
             current = [w]
         else:
@@ -91,3 +96,28 @@ def dedupe_lines(lines: list[Line]) -> list[Line]:
             continue
         out.append(line)
     return out
+
+
+# Phrases Whisper hallucinates over instrumentals/silence, or that come from the
+# video (credits, channel plugs) rather than the sung lyrics.
+_JUNK_LINE_RE = re.compile(
+    r"(mul[țt]umesc (pentru|celor|ca)|mul[țt]umim|subscribe|abona[țt]i|aboneaza|"
+    r"subtitles? (by|created)|amara\.org|transcri(ere|s) (by|de)|lyrics? (by|provided)|"
+    r"powered by|www\.|\.com\b|\.ro\b|like [șs]i share|comentariu)",
+    re.I,
+)
+
+
+def is_junk_line(text: str) -> bool:
+    stripped = (text or "").strip()
+    if not stripped:
+        return True
+    # A line that is only punctuation/music notes carries no lyric.
+    if not re.search(r"\w", stripped):
+        return True
+    return bool(_JUNK_LINE_RE.search(stripped))
+
+
+def drop_junk_lines(lines: list[Line]) -> list[Line]:
+    """Remove empty/hallucinated lines from a transcription."""
+    return [line for line in lines if not is_junk_line(line.text)]
